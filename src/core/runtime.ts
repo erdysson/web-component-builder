@@ -1,5 +1,11 @@
 import {IClass} from './interfaces';
-import {IInjectMetadataConfig, IInputMetadataConfig, TComponentInstance, TWcInjectMetadata, TInputMetadata} from './metadata-interfaces';
+import {
+    IInjectMetadataConfig,
+    IInputMetadataConfig,
+    TComponentInstance,
+    TWcInjectMetadata,
+    TInputMetadata
+} from './metadata-interfaces';
 import {Metadata} from './metadata';
 
 export class Runtime {
@@ -27,7 +33,12 @@ export class Runtime {
         const injectMetadata = Metadata.getInjectedProviderConfig(componentClass);
         const constructorParams = this.getHostClassConstructorParams(injectMetadata);
         const inputConfigForComponent = Metadata.getComponentInputConfig(componentClass);
-        const componentFactory = this.getComponentFactory(componentClass, constructorParams, inputConfigForComponent, template);
+        const componentFactory = this.getComponentFactory(
+            componentClass,
+            constructorParams,
+            inputConfigForComponent,
+            template
+        );
         // register web component element
         customElements.define(selector, componentFactory);
     }
@@ -51,11 +62,19 @@ export class Runtime {
 
     private getHostClassConstructorParams(injectMetadata: TWcInjectMetadata): unknown[] {
         return injectMetadata
-            .sort((config1: IInjectMetadataConfig, config2: IInjectMetadataConfig) => config1.targetParameterIndex - config2.targetParameterIndex)
+            .sort(
+                (config1: IInjectMetadataConfig, config2: IInjectMetadataConfig) =>
+                    config1.targetParameterIndex - config2.targetParameterIndex
+            )
             .map((config: IInjectMetadataConfig) => this.providerInstanceMap.get(config.providerClass));
     }
 
-    private getComponentFactory(componentClass: IClass, componentClassConstructorParams: unknown[], componentInputs: TInputMetadata, componentTemplate: string): IClass<CustomElementConstructor> {
+    private getComponentFactory(
+        componentClass: IClass,
+        componentClassConstructorParams: unknown[],
+        componentInputs: TInputMetadata,
+        componentTemplate: string
+    ): IClass<CustomElementConstructor> {
         return class RunTimeWebComponentClass extends HTMLElement {
             private readonly componentInstance: TComponentInstance;
 

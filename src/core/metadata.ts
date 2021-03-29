@@ -32,7 +32,11 @@ export class Metadata {
         const hasMetadata = Reflect.hasMetadata(METADATA_KEYS.INJECT, hostClass);
 
         if (!hasMetadata) {
-            Reflect.defineMetadata(METADATA_KEYS.INJECT, [{providerClass, targetParameterIndex}] as IInjectMetadataConfig[], hostClass);
+            Reflect.defineMetadata(
+                METADATA_KEYS.INJECT,
+                [{providerClass, targetParameterIndex}] as IInjectMetadataConfig[],
+                hostClass
+            );
         } else {
             const injectMetadata = Metadata.getInjectedProviderConfig(hostClass);
             injectMetadata.push({
@@ -46,12 +50,20 @@ export class Metadata {
         return Reflect.getMetadata(METADATA_KEYS.INJECT, hostClass) as TWcInjectMetadata;
     }
 
-    static setComponentInputConfig(componentInstance: IObject, componentPropertyKey: string, inputAttributeName: string): void {
+    static setComponentInputConfig(
+        componentInstance: IObject,
+        componentPropertyKey: string,
+        inputAttributeName: string
+    ): void {
         const componentClass: IClass = componentInstance.constructor;
         const hasMetadata = Reflect.hasMetadata(METADATA_KEYS.INPUT, componentClass);
 
         if (!hasMetadata) {
-            Reflect.defineMetadata(METADATA_KEYS.INPUT, [{componentPropertyKey, inputAttributeName}] as TInputMetadata, componentClass);
+            Reflect.defineMetadata(
+                METADATA_KEYS.INPUT,
+                [{componentPropertyKey, inputAttributeName}] as TInputMetadata,
+                componentClass
+            );
         } else {
             const inputMetadata = Metadata.getComponentInputConfig(componentClass);
             inputMetadata.push({componentPropertyKey, inputAttributeName});
