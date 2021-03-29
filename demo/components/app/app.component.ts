@@ -19,6 +19,7 @@ export class AppComponent implements IOnInit, IOnDestroy, IOnChanges {
         //
     }
     onInit(): void {
+        console.log('hey there!');
         this.testService.checkIfTest();
         this.logService.log('app component on init', 'index :', this.index);
     }

@@ -11,7 +11,8 @@
   "scripts": {
     "eslint": "eslint . --ext .ts",
     "eslint:fix": "eslint . --ext .ts --fix",
-    "build": "rollup -c ./build/rollup.config.cjs",
+    "rollup:build": "rollup -c ./build/rollup.config.cjs",
+    "webpack:build": "webpack build -c build/webpack.config.js",
     "serve": "static-server dist"
   },
   "keywords": [],
@@ -22,14 +23,23 @@
     "core-js": "^3.9.1"
   },
   "devDependencies": {
+    "@babel/core": "^7.13.13",
+    "@babel/plugin-transform-runtime": "^7.13.10",
+    "@babel/preset-env": "^7.13.12",
+    "@babel/preset-typescript": "^7.13.0",
+    "@babel/runtime": "^7.13.10",
     "@rollup/plugin-commonjs": "^18.0.0",
     "@rollup/plugin-node-resolve": "^11.2.1",
     "@types/node": "^14.14.37",
     "@typescript-eslint/eslint-plugin": "^4.19.0",
     "@typescript-eslint/parser": "^4.19.0",
+    "babel-loader": "^8.2.2",
     "eslint": "^7.23.0",
     "eslint-plugin-prettier": "^3.3.1",
+    "html-loader": "^2.1.2",
+    "html-webpack-plugin": "^5.3.1",
     "husky": "^6.0.0",
+    "madge": "^4.0.2",
     "prettier": "^2.2.1",
     "pretty-quick": "^3.1.0",
     "reflect-metadata": "^0.1.13",
@@ -39,8 +49,10 @@
     "rollup-plugin-html2": "^2.0.0",
     "rollup-plugin-typescript2": "^0.30.0",
     "static-server": "^2.2.1",
+    "ts-loader": "^8.1.0",
     "tslib": "^2.1.0",
     "typescript": "^4.2.3",
-    "webpack": "^5.28.0"
+    "webpack": "^5.28.0",
+    "webpack-cli": "^4.6.0"
   }
 }
