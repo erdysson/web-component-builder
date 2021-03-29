@@ -1,17 +1,13 @@
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const typescript = require('rollup-plugin-typescript2');
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const html2 = require('rollup-plugin-html2');
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const resolve = require('@rollup/plugin-node-resolve');
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const html = require('rollup-plugin-html');
 
 module.exports = {
     input: 'demo/main.ts',
     output: {
         dir: 'dist',
-        format: 'cjs'
+        format: 'iife'
     },
     plugins: [
         resolve.default({
@@ -20,7 +16,10 @@ module.exports = {
         html({
             include: '**/*.html'
         }),
-        typescript({tsconfig: './tsconfig.json'}),
+        typescript({
+            tsconfig: './tsconfig.json',
+            clean: true
+        }),
         html2({
             template: './demo/index.html'
         })

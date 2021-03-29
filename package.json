@@ -6,7 +6,7 @@
   "scripts": {
     "eslint": "eslint . --ext .ts",
     "eslint:fix": "eslint . --ext .ts --fix",
-    "build": "rollup -c rollup.config.cjs",
+    "build": "rollup -c ./build/rollup.config.cjs",
     "serve": "static-server dist"
   },
   "keywords": [],
