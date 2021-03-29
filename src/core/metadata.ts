@@ -32,16 +32,12 @@ export class Metadata {
         const hasMetadata = Reflect.hasMetadata(METADATA_KEYS.INJECT, hostClass);
 
         if (!hasMetadata) {
-            Reflect.defineMetadata(
-                METADATA_KEYS.INJECT,
-                [{ providerClass, targetParameterIndex }] as IInjectMetadataConfig[],
-                hostClass,
-            );
+            Reflect.defineMetadata(METADATA_KEYS.INJECT, [{providerClass, targetParameterIndex}] as IInjectMetadataConfig[], hostClass);
         } else {
             const injectMetadata = Metadata.getInjectedProviderConfig(hostClass);
             injectMetadata.push({
                 providerClass,
-                targetParameterIndex,
+                targetParameterIndex
             });
         }
     }
