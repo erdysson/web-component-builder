@@ -32,6 +32,4 @@ export class AppComponent implements IOnInit, IOnDestroy, IOnChanges {
         this.testService.checkIfTest();
         this.logService.log('app component on destroy');
     }
-
-
 }
