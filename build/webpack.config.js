@@ -3,17 +3,17 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
     entry: {
-        main: [
-            // needed for IE11
-            // 'core-js/stable',
-            // '@webcomponents/webcomponentsjs/webcomponents-bundle.js',
-            // needed for normal browser with target: es5
-            // '@webcomponents/webcomponentsjs/custom-elements-es5-adapter',
-            // application entry file
-            './demo/main.ts'
-        ]
+        // polyfills
+        polyfills: './demo/polyfills.ts',
+        // application entry file
+        main: './demo/main.ts'
     },
     // devtool: 'inline-source-map',
+    devServer: {
+        contentBase: path.join(process.cwd(), 'dist'),
+        compress: true,
+        port: 9000
+    },
     mode: 'development',
     cache: false,
     module: {
@@ -56,7 +56,6 @@ module.exports = {
         extensions: ['.ts', '.js']
     },
     output: {
-        filename: 'main.js',
         path: path.resolve(process.cwd(), 'dist')
     },
     plugins: [
