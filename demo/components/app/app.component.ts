@@ -9,7 +9,6 @@ import appTemplate from './app.component.html';
     template: appTemplate
 })
 export class AppComponent implements IOnInit, IOnDestroy, IOnChanges {
-
     @Input()
     private index!: string;
 
