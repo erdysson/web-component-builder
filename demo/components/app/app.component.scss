@@ -1,0 +1,12 @@
+.app-component {
+    align-items: center;
+    background: antiquewhite;
+    display: flex;
+    justify-content: center;
+
+    span {
+        display: flex;
+        color: black;
+        text-transform: uppercase;
+    }
+}

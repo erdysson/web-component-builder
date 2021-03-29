@@ -1,0 +1,41 @@
+{
+  "name": "web-component-builder",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "eslint": "eslint . --ext .ts",
+    "eslint:fix": "eslint . --ext .ts --fix",
+    "build": "rollup -c rollup.config.cjs",
+    "serve": "static-server dist"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@webcomponents/webcomponentsjs": "^2.5.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.13.13",
+    "@babel/preset-typescript": "^7.13.0",
+    "@rollup/plugin-babel": "^5.3.0",
+    "@rollup/plugin-commonjs": "^18.0.0",
+    "@rollup/plugin-node-resolve": "^11.2.1",
+    "@types/node": "^14.14.37",
+    "@typescript-eslint/eslint-plugin": "^4.19.0",
+    "@typescript-eslint/parser": "^4.19.0",
+    "babel-plugin-transform-custom-element-classes": "^0.1.0",
+    "babel-plugin-transform-es2015-classes": "^6.24.1",
+    "eslint": "^7.23.0",
+    "reflect-metadata": "^0.1.13",
+    "rollup": "^2.43.1",
+    "rollup-plugin-babel": "^4.4.0",
+    "rollup-plugin-html": "^0.2.1",
+    "rollup-plugin-html2": "^2.0.0",
+    "rollup-plugin-typescript2": "^0.30.0",
+    "static-server": "^2.2.1",
+    "tslib": "^2.1.0",
+    "typescript": "^4.2.3",
+    "webpack": "^5.28.0"
+  }
+}
