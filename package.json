@@ -12,8 +12,8 @@
     "eslint": "eslint . --ext .ts",
     "eslint:fix": "eslint . --ext .ts --fix",
     "rollup:build": "rollup -c ./build/rollup.config.cjs",
-    "webpack:build": "webpack build -c build/webpack.config.js",
-    "webpack:dev": "webpack serve -c build/webpack.config.js",
+    "webpack:dev": "NODE_ENV=development webpack serve -c build/webpack.config.dev.js",
+    "webpack:prod": "NODE_ENV=production webpack build -c build/webpack.config.prod.js",
     "serve": "static-server dist"
   },
   "keywords": [],
