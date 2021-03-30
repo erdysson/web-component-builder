@@ -30,7 +30,6 @@ const moduleRules = {
                 loader: 'babel-loader',
                 options: {
                     presets: [
-                        '@babel/preset-typescript',
                         [
                             '@babel/preset-env',
                             {
@@ -87,7 +86,7 @@ const plugins = [
         template: './demo/index.html'
     })
 ]
-
+// web is needed for IE11
 const target = ['web', 'es5'];
 
 module.exports = {
