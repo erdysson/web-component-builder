@@ -12,9 +12,7 @@ export class Runtime {
     private readonly providerInstanceMap: WeakMap<IClass, unknown> = new WeakMap<IClass, unknown>();
 
     initModule(moduleClass: IClass): void {
-        const {providers, components} = Metadata.getModuleConfig(moduleClass);
-        // init providers
-        providers.forEach((providerClass: IClass) => this.initProvider(providerClass));
+        const {components} = Metadata.getModuleConfig(moduleClass);
         // init components
         components.forEach((componentClass: IClass) => this.initComponent(componentClass));
     }
@@ -31,6 +29,10 @@ export class Runtime {
     initComponent(componentClass: IClass): void {
         const {selector, template} = Metadata.getComponentConfig(componentClass);
         const injectMetadata = Metadata.getInjectedProviderConfig(componentClass);
+        // init providers that are used in component(s)
+        injectMetadata.forEach((injectMetadataConfig: IInjectMetadataConfig) => {
+            this.initProvider(injectMetadataConfig.providerClass);
+        });
         const constructorParams = this.getHostClassConstructorParams(injectMetadata);
         const inputConfigForComponent = Metadata.getComponentInputConfig(componentClass);
         const componentFactory = this.getComponentFactory(
