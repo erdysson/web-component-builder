@@ -17,7 +17,9 @@ const mode = process.env.NODE_ENV;
 const devServer = {
     contentBase: path.join(process.cwd(), 'dist'),
     compress: false,
-    port: 9000
+    port: 9000,
+    inline: true,
+    hot: true
 };
 
 const cache = true;
@@ -86,8 +88,6 @@ const plugins = [
         template: './demo/index.html'
     })
 ]
-// web is needed for IE11
-const target = ['web', 'es5'];
 
 module.exports = {
     entry,
@@ -98,6 +98,5 @@ module.exports = {
     resolve,
     output,
     optimization,
-    plugins,
-    target
+    plugins
 };

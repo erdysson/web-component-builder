@@ -14,5 +14,6 @@ module.exports = {
     output: sharedConfig.output,
     optimization: sharedConfig.optimization,
     plugins: sharedConfig.plugins,
-    target: sharedConfig.target
+    // takes the target values from browserslist file
+    target: 'browserslist'
 };
