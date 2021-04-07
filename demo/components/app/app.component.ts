@@ -3,6 +3,7 @@ import {IChanges, IOnChanges, IOnDestroy, IOnInit} from '../../../src/core/inter
 import {LogService} from '../../services/log.service';
 import {TestService} from '../../services/test.service';
 import appTemplate from './app.component.html';
+import './app.component.scss';
 
 @Component({
     selector: 'app-component',
