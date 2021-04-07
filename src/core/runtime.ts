@@ -86,9 +86,12 @@ export class Runtime {
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore
                 this.componentInstance = new componentClass(...componentClassConstructorParams);
-
-                const shadow = this.attachShadow({mode: 'open'});
-                shadow.innerHTML = componentTemplate;
+                // setTimeout is required because in IE11, the order of onInit() is different.
+                // to align the functionality across the browsers, setTimeout is needed here
+                setTimeout(() => {
+                    // the way for it to work on IE11 and applying global styles to the components
+                    this.insertAdjacentHTML('beforeend', componentTemplate);
+                });
             }
 
             static get observedAttributes() {

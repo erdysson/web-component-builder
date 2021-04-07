@@ -15,5 +15,5 @@ module.exports = {
     output: sharedConfig.output,
     optimization: sharedConfig.optimization,
     plugins: sharedConfig.plugins,
-    target: 'browserslist'
+    // target: ['web', 'es5']
 };
