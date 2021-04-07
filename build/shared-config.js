@@ -61,12 +61,7 @@ const moduleRules = {
         test: /\.scss?$/,
         use: [
             MiniCssExtractPlugin.loader,
-            // {
-            //     // Creates `style` nodes from JS strings
-            //     loader: 'style-loader'
-            // },
             {
-                // Translates CSS into CommonJS
                 loader: 'css-loader'
             },
             {
@@ -74,10 +69,7 @@ const moduleRules = {
                 loader: 'sass-loader',
                 options: {
                     sourceMap: true
-                },
-                // sassOptions: {
-                //     outputStyle: 'compressed',
-                // }
+                }
             }
         ],
         exclude: /node_modules/
