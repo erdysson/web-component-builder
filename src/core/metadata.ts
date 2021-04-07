@@ -47,7 +47,7 @@ export class Metadata {
     }
 
     static getInjectedProviderConfig(hostClass: IClass): TWcInjectMetadata {
-        return Reflect.getMetadata(METADATA_KEYS.INJECT, hostClass) as TWcInjectMetadata;
+        return (Reflect.getMetadata(METADATA_KEYS.INJECT, hostClass) || []) as TWcInjectMetadata;
     }
 
     static setComponentInputConfig(
@@ -71,6 +71,6 @@ export class Metadata {
     }
 
     static getComponentInputConfig(componentClass: IClass): TInputMetadata {
-        return Reflect.getMetadata(METADATA_KEYS.INPUT, componentClass);
+        return Reflect.getMetadata(METADATA_KEYS.INPUT, componentClass) || [];
     }
 }
