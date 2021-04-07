@@ -9,11 +9,13 @@ module.exports = {
     module: {
         rules: [
             sharedConfig.moduleRules.ts,
-            sharedConfig.moduleRules.html
+            sharedConfig.moduleRules.html,
+            sharedConfig.moduleRules.sass
         ]
     },
     resolve: sharedConfig.resolve,
     output: sharedConfig.output,
     optimization: sharedConfig.optimization,
-    plugins: sharedConfig.plugins
+    plugins: sharedConfig.plugins,
+    target: 'web'
 };

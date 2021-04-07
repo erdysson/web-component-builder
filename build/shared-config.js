@@ -1,5 +1,6 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 const entry = {
     // this is preferred way for better code splitting
@@ -55,6 +56,31 @@ const moduleRules = {
         test: /\.html?$/,
         use: 'html-loader',
         exclude: /node_modules/
+    },
+    sass: {
+        test: /\.scss?$/,
+        use: [
+            MiniCssExtractPlugin.loader,
+            // {
+            //     // Creates `style` nodes from JS strings
+            //     loader: 'style-loader'
+            // },
+            {
+                // Translates CSS into CommonJS
+                loader: 'css-loader'
+            },
+            {
+                // Compiles Sass to CSS
+                loader: 'sass-loader',
+                options: {
+                    sourceMap: true
+                },
+                // sassOptions: {
+                //     outputStyle: 'compressed',
+                // }
+            }
+        ],
+        exclude: /node_modules/
     }
 };
 
@@ -84,6 +110,10 @@ const optimization = {
 };
 
 const plugins = [
+    new MiniCssExtractPlugin({
+        filename: '[name].[contenthash].css',
+        chunkFilename: '[id].[contenthash].css'
+    }),
     new HtmlWebpackPlugin({
         template: './demo/index.html'
     })
