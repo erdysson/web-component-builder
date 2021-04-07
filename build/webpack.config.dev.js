@@ -15,7 +15,5 @@ module.exports = {
     resolve: sharedConfig.resolve,
     output: sharedConfig.output,
     optimization: sharedConfig.optimization,
-    plugins: sharedConfig.plugins,
-    // 'web' needed for older browsers if passes as array, breaks the HMR
-    target: 'web'
+    plugins: sharedConfig.plugins
 };
