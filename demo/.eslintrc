@@ -1,19 +1,14 @@
 {
   "root": true,
   "env": {
-    "browser": true,
+    "node": true,
     "es6": true
   },
-  "parser": "@typescript-eslint/parser",
   "plugins": [
-    "@typescript-eslint",
-    "prettier"
+    "prettier",
+    "eslint-comments"
   ],
   "extends": [
-    "eslint:recommended",
-    "plugin:@typescript-eslint/recommended"
-  ],
-  "rules": {
-    "prettier/prettier": "error"
-  }
+    "eslint:recommended"
+  ]
 }
