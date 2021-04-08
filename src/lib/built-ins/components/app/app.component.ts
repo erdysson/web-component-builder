@@ -1,7 +1,8 @@
-import {Component, Inject, Input} from '../../../src/core/decorators';
-import {IChanges, IOnChanges, IOnDestroy, IOnInit} from '../../../src/core/interfaces';
+import {Component, Inject, Input} from '../../../core/decorators';
+import {IChanges, IOnChanges, IOnDestroy, IOnInit} from '../../../core/interfaces';
 import {LogService} from '../../services/log.service';
 import {TestService} from '../../services/test.service';
+
 import appTemplate from './app.component.html';
 import './app.component.scss';
 

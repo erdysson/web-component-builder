@@ -1,7 +1,8 @@
-import {Component, Inject} from '../../../src/core/decorators';
-import loadingTemplate from './loading.component.html';
-import {IOnDestroy, IOnInit} from '../../../src/core/interfaces';
+import {Component, Inject} from '../../../core/decorators';
+import {IOnDestroy, IOnInit} from '../../../core/interfaces';
 import {LogService} from '../../services/log.service';
+
+import loadingTemplate from './loading.component.html';
 import './loading.component.scss';
 
 @Component({

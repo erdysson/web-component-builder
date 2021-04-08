@@ -1,7 +1,7 @@
 import 'reflect-metadata';
+import {IClass, IComponentConfig, IModuleConfig, IObject} from './interfaces';
+import {IInjectMetadataConfig, TInputMetadata, TWcInjectMetadata} from './metadata-interfaces';
 import {METADATA_KEYS} from './metadata-keys';
-import {IClass, IModuleConfig, IComponentConfig, IObject} from './interfaces';
-import {IInjectMetadataConfig, TWcInjectMetadata, TInputMetadata} from './metadata-interfaces';
 
 export class Metadata {
     static setModuleConfig(moduleClass: IClass, moduleConfig: IModuleConfig): void {

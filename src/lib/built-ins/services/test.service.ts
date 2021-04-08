@@ -1,4 +1,5 @@
-import {Inject, Injectable} from '../../src/core/decorators';
+import {Inject, Injectable} from '../../core/decorators';
+
 import {LogService} from './log.service';
 
 @Injectable()

@@ -1,4 +1,4 @@
-import {IClass, IModuleConfig, IComponentConfig, IObject} from './interfaces';
+import {IClass, IComponentConfig, IModuleConfig, IObject} from './interfaces';
 import {Metadata} from './metadata';
 
 export const Module = (config: IModuleConfig): ClassDecorator => (target: IClass) =>

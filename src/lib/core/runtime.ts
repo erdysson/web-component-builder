@@ -1,12 +1,12 @@
 import {IClass} from './interfaces';
+import {Metadata} from './metadata';
 import {
     IInjectMetadataConfig,
     IInputMetadataConfig,
     TComponentInstance,
-    TWcInjectMetadata,
-    TInputMetadata
+    TInputMetadata,
+    TWcInjectMetadata
 } from './metadata-interfaces';
-import {Metadata} from './metadata';
 
 export class Runtime {
     private readonly providerInstanceMap: WeakMap<IClass, unknown> = new WeakMap<IClass, unknown>();

@@ -1,12 +1,18 @@
-import {Module} from '../src/core/decorators';
-import {TestService} from './services/test.service';
-import {LogService} from './services/log.service';
+import {bootstrap} from '../core/bootstrap';
+import {Module} from '../core/decorators';
+
 import {AppComponent} from './components/app/app.component';
 import {LoadingComponent} from './components/loading/loading.component';
 import {TestComponent} from './components/test/test.component';
+import {LogService} from './services/log.service';
+import {TestService} from './services/test.service';
 
 @Module({
     components: [AppComponent, LoadingComponent, TestComponent],
     providers: [TestService, LogService]
 })
-export class AppModule {}
+export class BuiltInModule {}
+
+export function useBuiltIns(): void {
+    bootstrap(BuiltInModule);
+}

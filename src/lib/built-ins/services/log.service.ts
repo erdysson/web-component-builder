@@ -1,4 +1,4 @@
-import {Injectable} from '../../src/core/decorators';
+import {Injectable} from '../../core/decorators';
 
 @Injectable()
 export class LogService {

@@ -1,4 +1,5 @@
-import {Component} from '../../../src/core/decorators';
+import {Component} from '../../../core/decorators';
+
 import testTemplate from './test.component.html';
 import './test.component.scss';
 
