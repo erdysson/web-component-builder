@@ -3,6 +3,7 @@ import commonjs from 'rollup-plugin-commonjs';
 import sourceMaps from 'rollup-plugin-sourcemaps';
 import typescript from 'rollup-plugin-typescript2';
 import json from 'rollup-plugin-json';
+// @ts-ignore
 import scss from 'rollup-plugin-scss';
 // @ts-ignore
 import html from 'rollup-plugin-html';

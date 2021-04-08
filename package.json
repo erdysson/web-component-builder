@@ -37,9 +37,6 @@
     "rollup:bundle:main": "rollup -c rollup.config.ts",
     "rollup:bundle:module": "rollup -c rollup.config.module.ts",
     "rollup:bundle": "run-p rollup:bundle:*",
-    "webpack:bundle": "",
-    "webpack:dev": "NODE_ENV=development webpack serve -c build/webpack.config.dev.js",
-    "webpack:prod": "NODE_ENV=production webpack build -c build/webpack.config.prod.js",
     "serve": "static-server dist"
   },
   "dependencies": {
@@ -47,25 +44,15 @@
     "core-js": "^3.9.1"
   },
   "devDependencies": {
-    "@babel/core": "^7.13.13",
-    "@babel/plugin-transform-runtime": "^7.13.10",
-    "@babel/preset-env": "^7.13.12",
-    "@babel/runtime": "^7.13.10",
     "@types/node": "^14.14.37",
     "@types/rollup-plugin-json": "^3.0.2",
     "@typescript-eslint/eslint-plugin": "^4.19.0",
     "@typescript-eslint/parser": "^4.19.0",
-    "babel-loader": "^8.2.2",
-    "css-loader": "^5.2.0",
     "eslint": "^7.23.0",
     "eslint-plugin-eslint-comments": "^3.2.0",
     "eslint-plugin-import": "^2.22.1",
     "eslint-plugin-prettier": "^3.3.1",
-    "html-loader": "^2.1.2",
-    "html-webpack-plugin": "^5.3.1",
     "husky": "^6.0.0",
-    "madge": "^4.0.2",
-    "mini-css-extract-plugin": "^1.4.0",
     "node-sass": "^5.0.0",
     "npm-run-all": "^4.1.5",
     "prettier": "^2.2.1",
@@ -79,16 +66,7 @@
     "rollup-plugin-scss": "^2.6.1",
     "rollup-plugin-sourcemaps": "^0.6.3",
     "rollup-plugin-typescript2": "^0.30.0",
-    "run-p": "0.0.0",
-    "run-s": "0.0.0",
-    "sass-loader": "^11.0.1",
-    "static-server": "^2.2.1",
-    "style-loader": "^2.0.0",
-    "ts-loader": "^8.1.0",
     "tslib": "^2.1.0",
-    "typescript": "^4.2.3",
-    "webpack": "^5.28.0",
-    "webpack-cli": "^4.6.0",
-    "webpack-dev-server": "^3.11.2"
+    "typescript": "^4.2.3"
   }
 }
