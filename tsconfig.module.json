@@ -4,8 +4,5 @@
     "target": "ESNext",
     "outDir": "./dist/module",
     "module": "ESNext"
-  },
-  "exclude": [
-    "node_modules/**"
-  ]
+  }
 }
