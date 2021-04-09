@@ -1,6 +1,6 @@
 {
   "name": "web-component-builder",
-  "version": "1.0.0-rc.3",
+  "version": "1.0.0-rc.4",
   "description": "Web Component Builder with typescript decorators",
   "author": "Erdi Taner Goekalp",
   "keywords": [
@@ -99,7 +99,8 @@
       "tag": false
     },
     "npm": {
-      "publish": true
+      "publish": true,
+      "publishPath": "."
     }
   }
 }
