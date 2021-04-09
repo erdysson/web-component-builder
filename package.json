@@ -88,9 +88,7 @@
   },
   "release-it": {
     "preReleaseId": "rc",
-    "hooks": {
-      "after:bump": "npm run lib:build:main"
-    },
+    "hooks": {},
     "git": {
       "requireCleanWorkingDir": true,
       "commitMessage": "Release web-component-builder ${version}",
