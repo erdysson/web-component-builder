@@ -24,7 +24,9 @@
     "dist/main",
     "dist/main.css",
     "dist/main.js",
-    "dist/main.js.map"
+    "dist/main.js.map",
+    "LICENSE",
+    "README.md"
   ],
   "husky": {
     "hooks": {
