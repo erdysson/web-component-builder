@@ -1,0 +1,2 @@
+# publish dist folder to npm
+!dist
