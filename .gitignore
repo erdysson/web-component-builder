@@ -1,4 +1,5 @@
 .idea
+dist/module
 dist/main/**/*.js
 dist/*.tsbuildinfo
 node_modules
