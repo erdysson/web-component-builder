@@ -1,4 +1,4 @@
 .idea
-dist
+dist/main/**.*js
 node_modules
 *.log
