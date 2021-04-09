@@ -99,7 +99,7 @@
       "tag": false
     },
     "npm": {
-      "publishPath": ""
+      "publish": true
     }
   }
 }
