@@ -1,6 +1,6 @@
 {
   "name": "web-component-builder",
-  "version": "1.0.5-0",
+  "version": "1.0.0-0",
   "description": "Web Component Builder with typescript decorators",
   "author": "Erdi Taner Goekalp",
   "keywords": [
@@ -40,9 +40,7 @@
     "lib:build:main": "npm run tsc:build:main && npm run rollup:bundle:main",
     "lib:build:module": "npm run tsc:build:module && npm run rollup:bundle:module",
     "lib:build": "npm run tsc:build && npm run rollup:bundle",
-    "preversion": "echo \"No tests yet. will run npm test later\"",
-    "version": "npm run lib:build:module && git add -A dist",
-    "postversion": "git push && rm -rf build/temp"
+    "release": "release-it"
   },
   "dependencies": {
     "@webcomponents/webcomponentsjs": "^2.5.0",
@@ -68,6 +66,7 @@
     "npm-run-all": "^4.1.5",
     "prettier": "^2.2.1",
     "pretty-quick": "^3.1.0",
+    "release-it": "^14.6.0",
     "rollup": "^2.45.0",
     "rollup-plugin-bundle-size": "^1.0.3",
     "rollup-plugin-commonjs": "^10.1.0",
@@ -80,5 +79,21 @@
     "rollup-plugin-typescript2": "^0.30.0",
     "tslib": "^2.2.0",
     "typescript": "^4.2.4"
+  },
+  "release-it": {
+    "preReleaseId": "rc",
+    "hooks": {
+      "after:bump": "npm run lib:build:main"
+    },
+    "git": {
+      "requireCleanWorkingDir": true,
+      "commitMessage": "Release web-component-builder ${version}",
+      "commitArgs": "--no-verify",
+      "pushArgs": "--no-verify",
+      "tag": false
+    },
+    "npm": {
+      "publishPath": "dist"
+    }
   }
 }
