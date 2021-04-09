@@ -1,7 +1,3 @@
-.test-component {
-  background-color: black;
-  color: white; }
-
 .app-component {
   align-items: center;
   background: antiquewhite;
@@ -14,4 +10,8 @@
 
 .loading-component {
   background: grey;
+  color: white; }
+
+.test-component {
+  background-color: black;
   color: white; }
