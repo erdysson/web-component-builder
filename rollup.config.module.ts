@@ -7,13 +7,15 @@ import json from 'rollup-plugin-json';
 import scss from 'rollup-plugin-scss';
 // @ts-ignore
 import html from 'rollup-plugin-html';
+// @ts-ignore
+import bundleSize from 'rollup-plugin-bundle-size';
 
 const pkg = require('./package.json');
 
 export default {
     input: 'src/lib/built-ins/built-in.module.ts',
     output: [
-        {file: pkg.module, format: 'es', sourcemap: true}
+        {file: pkg.module, format: 'esm', sourcemap: true}
     ],
     // Indicate here external modules you don't wanna include in your bundle (i.e.: 'lodash')
     external: [],
@@ -40,5 +42,6 @@ export default {
         resolve(),
         // Resolve source maps to the original source
         sourceMaps(),
+        bundleSize()
     ],
 }
