@@ -2,7 +2,9 @@ import resolve from 'rollup-plugin-node-resolve';
 import commonjs from 'rollup-plugin-commonjs';
 import sourceMaps from 'rollup-plugin-sourcemaps';
 import typescript from 'rollup-plugin-typescript2';
+import {babel} from '@rollup/plugin-babel';
 import json from 'rollup-plugin-json';
+// import copy from 'rollup-plugin-copy'
 // @ts-ignore
 import scss from 'rollup-plugin-scss';
 // @ts-ignore
@@ -40,8 +42,42 @@ export default {
         // which external modules to include in the bundle
         // https://github.com/rollup/rollup-plugin-node-resolve#usage
         resolve(),
+        babel({
+            babelrc: false,
+            babelHelpers: 'runtime',
+            extensions: ['.ts'],
+            presets: [
+                [
+                    '@babel/preset-env',
+                    {
+                        corejs: {version: 3},
+                        useBuiltIns: 'entry',
+                        targets: `
+                            last 1 Chrome version,
+                            last 1 Firefox version,
+                            last 2 Edge major versions,
+                            last 2 Safari major versions,
+                            last 2 iOS major versions,
+                            Firefox ESR,
+                            not IE 11
+                        `,
+                        bugfixes: true,
+                        debug: true
+                    }
+                ]
+            ],
+            plugins: [
+                '@babel/transform-runtime'
+            ],
+            exclude: 'node_modules/**'
+        }),
         // Resolve source maps to the original source
         sourceMaps(),
+        // copy({
+        //     targets: [
+        //         {src: './package.json', dest: './dist'}
+        //     ]
+        // }),
         bundleSize()
     ],
 }

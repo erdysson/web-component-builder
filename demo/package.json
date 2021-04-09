@@ -12,8 +12,6 @@
     "serve": "static-server dist"
   },
   "dependencies": {
-    "@webcomponents/webcomponentsjs": "^2.5.0",
-    "core-js": "^3.9.1",
     "web-component-builder": "1.0.0"
   },
   "devDependencies": {

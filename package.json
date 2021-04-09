@@ -37,11 +37,13 @@
     "rollup:bundle:main": "rollup -c rollup.config.ts",
     "rollup:bundle:module": "rollup -c rollup.config.module.ts",
     "rollup:bundle": "run-p rollup:bundle:*",
+    "lib:build:main": "npm run tsc:build:main && npm run rollup:bundle:main",
+    "lib:build:module": "npm run tsc:build:module && npm run rollup:bundle:module",
     "lib:build": "npm run tsc:build && npm run rollup:bundle"
   },
   "dependencies": {
     "@webcomponents/webcomponentsjs": "^2.5.0",
-    "core-js": "^3.9.1"
+    "core-js": "^3.10.1"
   },
   "devDependencies": {
     "@babel/core": "^7.13.13",
@@ -51,8 +53,8 @@
     "@rollup/plugin-babel": "^5.3.0",
     "@types/node": "^14.14.37",
     "@types/rollup-plugin-json": "^3.0.2",
-    "@typescript-eslint/eslint-plugin": "^4.19.0",
-    "@typescript-eslint/parser": "^4.19.0",
+    "@typescript-eslint/eslint-plugin": "^4.21.0",
+    "@typescript-eslint/parser": "^4.21.0",
     "eslint": "^7.23.0",
     "eslint-plugin-eslint-comments": "^3.2.0",
     "eslint-plugin-import": "^2.22.1",
@@ -63,16 +65,17 @@
     "prettier": "^2.2.1",
     "pretty-quick": "^3.1.0",
     "reflect-metadata": "^0.1.13",
-    "rollup": "^2.44.0",
+    "rollup": "^2.45.0",
     "rollup-plugin-bundle-size": "^1.0.3",
     "rollup-plugin-commonjs": "^10.1.0",
+    "rollup-plugin-copy": "^3.4.0",
     "rollup-plugin-html": "^0.2.1",
     "rollup-plugin-json": "^4.0.0",
     "rollup-plugin-node-resolve": "^5.2.0",
     "rollup-plugin-scss": "^2.6.1",
     "rollup-plugin-sourcemaps": "^0.6.3",
     "rollup-plugin-typescript2": "^0.30.0",
-    "tslib": "^2.1.0",
-    "typescript": "^4.2.3"
+    "tslib": "^2.2.0",
+    "typescript": "^4.2.4"
   }
 }

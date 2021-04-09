@@ -1,3 +1,7 @@
+// needed for older browsers
+import 'core-js/stable';
+import '@webcomponents/webcomponentsjs/webcomponents-bundle.js';
+
 import {bootstrap} from '../core/bootstrap';
 import {Module} from '../core/decorators';
 

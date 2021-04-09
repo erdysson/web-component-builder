@@ -4,6 +4,7 @@ import sourceMaps from 'rollup-plugin-sourcemaps';
 import typescript from 'rollup-plugin-typescript2';
 import {babel} from '@rollup/plugin-babel';
 import json from 'rollup-plugin-json';
+// import copy from 'rollup-plugin-copy'
 // @ts-ignore
 import scss from 'rollup-plugin-scss';
 // @ts-ignore
@@ -42,27 +43,37 @@ export default {
         // https://github.com/rollup/rollup-plugin-node-resolve#usage
         resolve(),
         // babel plugin to add extras
-        // babel({
-        //     babelrc: false,
-        //     extensions: ['.ts'],
-        //     presets: [
-        //         [
-        //             '@babel/preset-env',
-        //             {
-        //                 corejs: {version: 3},
-        //                 useBuiltIns: 'usage',
-        //                 modules: 'umd',
-        //                 debug: true
-        //             }
-        //         ]
-        //     ],
-        //     plugins: [
-        //         '@babel/transform-runtime'
-        //     ],
-        //     exclude: 'node_modules/**'
-        // }),
+        babel({
+            babelrc: false,
+            babelHelpers: 'runtime',
+            extensions: ['.ts'],
+            presets: [
+                [
+                    '@babel/preset-env',
+                    {
+                        corejs: {version: 3},
+                        useBuiltIns: 'entry',
+                        targets: `
+                            > 1%,
+                            ie 11,
+                            not dead
+                        `,
+                        debug: true
+                    }
+                ]
+            ],
+            plugins: [
+                '@babel/transform-runtime'
+            ],
+            exclude: 'node_modules/**'
+        }),
         // Resolve source maps to the original source
         sourceMaps(),
+        // copy({
+        //     targets: [
+        //         {src: 'package.json', dest: 'dist'}
+        //     ]
+        // }),
         bundleSize()
     ],
 }
