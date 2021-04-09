@@ -97,7 +97,7 @@
       "tag": false
     },
     "npm": {
-      "publishPath": "dist"
+      "publishPath": ""
     }
   }
 }
