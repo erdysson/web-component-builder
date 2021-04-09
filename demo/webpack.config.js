@@ -68,7 +68,16 @@ module.exports = {
                     }
                 ],
                 exclude: /node_modules/
-            }
+            },
+            {
+                test: /\.css$/i,
+                use: [
+                    MiniCssExtractPlugin.loader,
+                    {
+                        loader: 'css-loader'
+                    }
+                ],
+            },
         ]
     },
     plugins: [
