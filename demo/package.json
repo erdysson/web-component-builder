@@ -7,13 +7,13 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "webpack:dev": "NODE_ENV=development webpack serve -c build/webpack.config.dev.js",
-    "webpack:prod": "NODE_ENV=production webpack build -c build/webpack.config.prod.js"
+    "webpack:dev": "NODE_ENV=development webpack serve -c webpack.config.js",
+    "webpack:prod": "NODE_ENV=production webpack build -c webpack.config.js",
+    "serve": "static-server dist"
   },
   "dependencies": {
     "@webcomponents/webcomponentsjs": "^2.5.0",
-    "core-js": "^3.9.1",
-    "web-component-builder": "1.0.0"
+    "core-js": "^3.9.1"
   },
   "devDependencies": {
     "@babel/core": "^7.13.13",
