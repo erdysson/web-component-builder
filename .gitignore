@@ -1,6 +1,4 @@
 .idea
-dist/module
-dist/main/**/*.js
-dist/*.tsbuildinfo
+dist
 node_modules
 *.log

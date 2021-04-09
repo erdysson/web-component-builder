@@ -13,6 +13,10 @@
     "node": ">=12"
   },
   "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/erdysson/web-component-builder.git"
+  },
   "main": "dist/main.js",
   "module": "dist/module.js",
   "typings": "dist/main/index.d.ts",
