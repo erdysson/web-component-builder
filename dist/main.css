@@ -8,10 +8,10 @@
     color: black;
     text-transform: uppercase; }
 
-.test-component {
-  background-color: black;
-  color: white; }
-
 .loading-component {
   background: grey;
+  color: white; }
+
+.test-component {
+  background-color: black;
   color: white; }
