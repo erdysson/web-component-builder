@@ -1,3 +1,11 @@
+.loading-component {
+  background: grey;
+  color: white; }
+
+.test-component {
+  background-color: black;
+  color: white; }
+
 .app-component {
   align-items: center;
   background: antiquewhite;
@@ -7,11 +15,3 @@
     display: flex;
     color: black;
     text-transform: uppercase; }
-
-.loading-component {
-  background: grey;
-  color: white; }
-
-.test-component {
-  background-color: black;
-  color: white; }
