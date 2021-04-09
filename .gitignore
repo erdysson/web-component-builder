@@ -1,4 +1,4 @@
 .idea
-dist
+dist/*.tsbuildinfo
 node_modules
 *.log
