@@ -1,5 +1,5 @@
 .idea
-dist/main/**.*js
+dist/main/**/*.js
 dist/*.tsbuildinfo
 node_modules
 *.log
