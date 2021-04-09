@@ -42,7 +42,7 @@
     "lib:build": "npm run tsc:build && npm run rollup:bundle",
     "preversion": "echo \"No tests yet. will run npm test later\"",
     "version": "npm run lib:build:module && git add -A dist",
-    "postversion": "git push && git push --tags && rm -rf build/temp"
+    "postversion": "git push && rm -rf build/temp"
   },
   "dependencies": {
     "@webcomponents/webcomponentsjs": "^2.5.0",
