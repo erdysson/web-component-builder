@@ -1,7 +1,4 @@
 .idea
-dist/module
-dist/module.js
-dist/module.js.map
-dist/*.tsbuildinfo
+dist
 node_modules
 *.log
