@@ -10,7 +10,7 @@ module.exports = {
     cache: false,
     // devtool: 'inline-source-map',
     devServer: {
-        contentBase: './dist',
+        contentBase: './build',
         compress: false,
         port: 9000,
         inline: true,
@@ -82,7 +82,7 @@ module.exports = {
     ],
     output: {
         filename: '[name].[contenthash].js',
-        path: path.join(process.cwd(), './dist'),
+        path: path.join(process.cwd(), './build'),
         clean: true
     },
     optimization: {

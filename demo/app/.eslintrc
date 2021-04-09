@@ -6,7 +6,7 @@
   },
   "ignorePatterns": [
     "node_modules",
-    "dist"
+    "build"
   ],
   "parser": "@typescript-eslint/parser",
   "plugins": [

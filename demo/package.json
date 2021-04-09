@@ -9,7 +9,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "webpack:dev": "NODE_ENV=development webpack serve -c webpack.config.js",
     "webpack:prod": "NODE_ENV=production webpack build -c webpack.config.js",
-    "serve": "static-server dist"
+    "serve": "static-server build"
   },
   "dependencies": {
     "web-component-builder": "1.0.0"
