@@ -1,12 +1,17 @@
-.app-component {
-    align-items: center;
-    background: antiquewhite;
-    display: flex;
-    justify-content: center;
+app-component {
+    display: block;
 
-    span {
+    .app-component {
+        align-items: center;
+        background: antiquewhite;
         display: flex;
-        color: black;
-        text-transform: uppercase;
+        flex-direction: column;
+        justify-content: center;
+
+        span {
+            display: flex;
+            color: black;
+            text-transform: uppercase;
+        }
     }
 }

@@ -1,4 +1,8 @@
-.test-component {
-  background-color: black;
-  color: white;
+test-component {
+  display: inline;
+
+  .test-component {
+    background-color: black;
+    color: white;
+  }
 }
