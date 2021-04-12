@@ -14,7 +14,6 @@
     "typeRoots": ["node_modules/@types", "src/lib/types"],
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
-    "preserveSymlinks": true,
     "resolveJsonModule": true,
     "inlineSourceMap": true,
     "experimentalDecorators": true,

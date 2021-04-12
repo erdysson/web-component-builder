@@ -1,11 +1,11 @@
-import resolve from 'rollup-plugin-node-resolve';
-import commonjs from 'rollup-plugin-commonjs';
-import typescript from 'rollup-plugin-typescript2';
-// @ts-ignore
-import bundleSize from 'rollup-plugin-bundle-size';
-import pkg from './package.json';
+const resolve = require('rollup-plugin-node-resolve');
+const commonjs = require('rollup-plugin-commonjs');
+const typescript2 = require('rollup-plugin-typescript2');
+const bundleSize = require('rollup-plugin-bundle-size');
+const typescript = require('typescript');
+const pkg = require('./package.json');
 
-export default {
+module.exports = {
     input: 'src/lib/index.ts',
     output: [
         {
@@ -27,8 +27,8 @@ export default {
         // Allow node_modules resolution, so you can use 'external' to control
         // which external modules to include in the bundle
         resolve(),
-        typescript({
-            typescript: require('typescript'),
+        typescript2({
+            typescript
         }),
         bundleSize()
     ]
