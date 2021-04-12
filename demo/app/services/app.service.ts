@@ -1,4 +1,4 @@
-import {Injectable} from 'web-component-builder/dist/main/lib/core/decorators';
+import {Injectable} from 'web-component-builder';
 
 @Injectable()
 export class AppService {

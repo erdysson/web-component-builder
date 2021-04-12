@@ -1,4 +1,4 @@
-import {Module} from 'web-component-builder/dist/main/lib/core/decorators';
+import {Module} from 'web-component-builder';
 
 import {App} from './components/app';
 import {AppService} from './services/app.service';

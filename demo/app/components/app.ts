@@ -1,5 +1,5 @@
 import {IOnInit} from 'web-component-builder';
-import {Component} from 'web-component-builder/dist/main/lib/core/decorators';
+import {Component} from 'web-component-builder';
 
 @Component({
     selector: 'app-c',

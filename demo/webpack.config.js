@@ -3,12 +3,10 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 module.exports = {
-    entry: {
-        main: './app/main.ts'
-    },
+    entry: './app/main.ts',
     mode: process.env.NODE_ENV,
     cache: false,
-    // devtool: 'inline-source-map',
+    devtool: 'inline-source-map',
     devServer: {
         contentBase: './build',
         compress: false,
@@ -23,28 +21,12 @@ module.exports = {
         rules: [
             {
                 test: /\.ts?$/,
-                use: [
-                    {
-                        loader: 'babel-loader',
-                        options: {
-                            presets: [
-                                [
-                                    '@babel/preset-env',
-                                    {
-                                        corejs: {version: 3},
-                                        useBuiltIns: 'usage'
-                                    }
-                                ]
-                            ],
-                            plugins: [
-                                '@babel/transform-runtime'
-                            ]
-                        }
-                    },
-                    {
-                        loader: 'ts-loader'
-                    }
-                ],
+                use: ['babel-loader', 'ts-loader'],
+                exclude: /node_modules/
+            },
+            {
+                test: /\.js?$/,
+                use: ['babel-loader'],
                 exclude: /node_modules/
             },
             {
@@ -53,31 +35,14 @@ module.exports = {
                 exclude: /node_modules/
             },
             {
-                test: /\.scss?$/,
-                use: [
-                    MiniCssExtractPlugin.loader,
-                    {
-                        loader: 'css-loader'
-                    },
-                    {
-                        // Compiles Sass to CSS
-                        loader: 'sass-loader',
-                        options: {
-                            sourceMap: true
-                        }
-                    }
-                ],
+                test: /\.(s?)css$/,
+                use: [MiniCssExtractPlugin.loader, 'css-loader', 'sass-loader'],
                 exclude: /node_modules/
             },
-            {
-                test: /\.css$/i,
-                use: [
-                    MiniCssExtractPlugin.loader,
-                    {
-                        loader: 'css-loader'
-                    }
-                ],
-            },
+            // {
+            //     test: /\.css$/i,
+            //     use: [MiniCssExtractPlugin.loader, 'css-loader']
+            // },
         ]
     },
     plugins: [
@@ -108,6 +73,5 @@ module.exports = {
             }
         }
     },
-    // target: process.env.NODE_ENV === 'development' ? 'web' : 'browserslist'
-    target: 'browserslist'
+    target: process.env.NODE_ENV === 'development' ? 'web' : 'browserslist'
 };

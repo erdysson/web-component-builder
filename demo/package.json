@@ -11,10 +11,7 @@
     "webpack:prod": "NODE_ENV=production webpack build -c webpack.config.js",
     "serve": "static-server build"
   },
-  "dependencies": {
-    "reflect-metadata": "^0.1.13",
-    "web-component-builder": "^1.0.0-rc.5"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@babel/core": "^7.13.13",
     "@babel/plugin-transform-runtime": "^7.13.10",
