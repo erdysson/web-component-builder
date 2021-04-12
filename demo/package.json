@@ -11,7 +11,11 @@
     "webpack:prod": "NODE_ENV=production webpack build -c webpack.config.js",
     "serve": "static-server build"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@webcomponents/webcomponentsjs": "^2.5.0",
+    "core-js": "^3.10.1",
+    "web-component-builder": "^1.0.0-rc.6"
+  },
   "devDependencies": {
     "@babel/core": "^7.13.13",
     "@babel/plugin-transform-runtime": "^7.13.10",

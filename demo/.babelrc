@@ -6,7 +6,7 @@
         "corejs": {
           "version": 3
         },
-        "useBuiltIns": "entry",
+        "useBuiltIns": "usage",
         "debug": true
       }
     ]
