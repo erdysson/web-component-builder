@@ -1,7 +1,6 @@
 import * as chai from 'chai';
-import {it} from 'mocha';
-import * as mocha from 'mocha';
-import * as sinon from 'sinon';
+import {afterEach, beforeEach, describe, it} from 'mocha';
+import {createSandbox, SinonSandbox, SinonSpy} from 'sinon';
 
 import {Component, IClass, IComponentConfig, Inject, Injectable, Input, IObject, Metadata, Module} from '../../src';
 
@@ -12,10 +11,10 @@ describe('Decorator functions', () => {
         template: '<div>a-template</div>'
     };
     // sandbox for sinon related ops
-    let sandbox: sinon.SinonSandbox;
+    let sandbox: SinonSandbox;
 
     beforeEach(() => {
-        sandbox = sinon.createSandbox();
+        sandbox = createSandbox();
     });
 
     afterEach(() => {
@@ -50,7 +49,7 @@ describe('Decorator functions', () => {
     describe('@Component() decorator', () => {
         it('should set component metadata correctly', () => {
             // setComponentConfig spy
-            const setComponentConfigSpy: sinon.SinonSpy<
+            const setComponentConfigSpy: SinonSpy<
                 [componentClass: IClass, componentConfig: IComponentConfig],
                 void
             > = sandbox.spy(Metadata, 'setComponentConfig');
@@ -85,14 +84,14 @@ describe('Decorator functions', () => {
     });
 
     describe('@Inject() decorator', () => {
-        let sandbox: sinon.SinonSandbox;
-        let setInjectedProviderConfigSpy: sinon.SinonSpy<
+        let sandbox: SinonSandbox;
+        let setInjectedProviderConfigSpy: SinonSpy<
             [hostClass: IClass, providerClass: IClass, targetParameterIndex: number],
             void
         >;
 
         beforeEach(() => {
-            sandbox = sinon.createSandbox();
+            sandbox = createSandbox();
             setInjectedProviderConfigSpy = sandbox.spy(Metadata, 'setInjectedProviderConfig');
         });
 
@@ -162,14 +161,14 @@ describe('Decorator functions', () => {
     });
 
     describe('@Input() decorator', () => {
-        let sandbox: sinon.SinonSandbox;
-        let setComponentInputConfigSpy: sinon.SinonSpy<
+        let sandbox: SinonSandbox;
+        let setComponentInputConfigSpy: SinonSpy<
             [componentInstance: IObject, componentPropertyKey: string, inputAttributeName: string],
             void
         >;
 
         beforeEach(() => {
-            sandbox = sinon.createSandbox();
+            sandbox = createSandbox();
             setComponentInputConfigSpy = sandbox.spy(Metadata, 'setComponentInputConfig');
         });
 
