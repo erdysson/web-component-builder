@@ -9,6 +9,7 @@
     "outDir": "../lib",
     "rootDir": ".",
     "strict": true,
+    "composite": true,
     "noImplicitAny": true,
     "moduleResolution": "node",
     "typeRoots": ["node_modules/@types", "types"],

@@ -1,0 +1,13 @@
+{
+  "require": [
+    "./test.register.js"
+  ],
+  "reporter": "spec",
+  "spec": [
+    "test/**/*.spec.ts"
+  ],
+  "watch": false,
+  "ignore": [
+    "node_modules"
+  ]
+}
