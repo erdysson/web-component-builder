@@ -14,11 +14,11 @@
     "type": "git",
     "url": "git+https://github.com/erdysson/web-component-builder.git"
   },
-  "main": "dist/index.js",
-  "module": "dist/index.es.js",
-  "typings": "dist/index.d.ts",
+  "main": "lib/index.js",
+  "module": "lib/index.es.js",
+  "typings": "lib/index.d.ts",
   "files": [
-    "dist"
+    "lib"
   ],
   "husky": {
     "hooks": {
@@ -26,10 +26,10 @@
     }
   },
   "scripts": {
-    "fix:prettier": "prettier \"src/lib/**/*.ts\" --write",
-    "fix:lint": "eslint src/lib --ext .ts --fix",
+    "fix:prettier": "prettier \"src/**/*.ts\" --write",
+    "fix:lint": "eslint src --ext .ts --fix",
     "fix": "run-s fix:*",
-    "tsc:build": "tsc -p tsconfig.json",
+    "tsc:build": "tsc -p src/tsconfig.json",
     "rollup:bundle": "rollup -c rollup.config.js",
     "lib:build": "npm run tsc:build && npm run rollup:bundle"
   },

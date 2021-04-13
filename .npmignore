@@ -1,2 +1,2 @@
-# publish dist folder to npm
-!dist
+# publish lib folder to npm
+!lib

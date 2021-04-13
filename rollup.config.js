@@ -6,12 +6,11 @@ const typescript = require('typescript');
 const pkg = require('./package.json');
 
 module.exports = {
-    input: 'src/lib/index.ts',
+    input: 'src/index.ts',
     output: [
         {
             file: pkg.main,
-            format: 'umd',
-            name: pkg.name
+            format: 'cjs'
         },
         {
             file: pkg.module,
@@ -28,7 +27,8 @@ module.exports = {
         // which external modules to include in the bundle
         resolve(),
         typescript2({
-            typescript
+            typescript,
+            tsconfig: 'src/tsconfig.json'
         }),
         bundleSize()
     ]
