@@ -17,9 +17,7 @@ module.exports = {
             format: 'es'
         }
     ],
-    external: [
-        ...Object.keys(pkg.peerDependencies || {}),
-    ],
+    external: [...Object.keys(pkg.peerDependencies || {})],
     plugins: [
         // Allow bundling cjs modules (unlike webpack, rollup doesn't understand cjs)
         commonjs(),

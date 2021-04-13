@@ -26,12 +26,13 @@
     }
   },
   "scripts": {
+    "lint": "cd src && eslint . --ext .ts",
     "fix:prettier": "prettier \"src/**/*.ts\" --write",
-    "fix:lint": "eslint src --ext .ts --fix",
+    "fix:lint": "npm run lint -- --fix",
     "fix": "run-s fix:*",
     "tsc:build": "tsc -p src/tsconfig.json",
     "rollup:bundle": "rollup -c rollup.config.js",
-    "lib:build": "npm run tsc:build && npm run rollup:bundle"
+    "lib:build": "npm run lint && npm run tsc:build && npm run rollup:bundle"
   },
   "dependencies": {
     "reflect-metadata": "^0.1.13"

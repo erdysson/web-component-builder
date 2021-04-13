@@ -4,10 +4,6 @@
     "browser": true,
     "es6": true
   },
-  "ignorePatterns": [
-    "node_modules",
-    "lib"
-  ],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
     "project": "tsconfig.json",
@@ -34,5 +30,9 @@
       { "ignoreDeclarationSort": true, "ignoreCase": true }
     ],
     "prettier/prettier": "error"
-  }
+  },
+  "ignorePatterns": [
+    "node_modules",
+    "lib"
+  ]
 }
