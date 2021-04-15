@@ -1,5 +1,3 @@
-import * as chai from 'chai';
-import {afterEach, beforeEach, describe, it} from 'mocha';
 import {createSandbox, SinonSandbox, SinonSpy} from 'sinon';
 
 import {Component, IClass, IComponentConfig, Inject, Injectable, Input, IObject, Metadata, Module} from '../../src';
@@ -39,10 +37,10 @@ describe('Decorator functions', () => {
             class M {}
 
             // run assertions
-            chai.expect(setModuleConfigSpy.calledOnce).to.be.true;
-            chai.expect(setModuleConfigSpy.getCall(0).args[0]).to.be.equal(M);
-            chai.expect(setModuleConfigSpy.getCall(0).args[1]).to.be.equal(moduleConfig);
-            chai.expect(Metadata.getModuleConfig(M)).to.be.equal(moduleConfig);
+            expect(setModuleConfigSpy.calledOnce).toBeTrue();
+            expect(setModuleConfigSpy.getCall(0).args[0]).toEqual(M);
+            expect(setModuleConfigSpy.getCall(0).args[1]).toEqual(moduleConfig);
+            expect(Metadata.getModuleConfig(M)).toEqual(moduleConfig);
         });
     });
 
@@ -59,10 +57,10 @@ describe('Decorator functions', () => {
             class C {}
 
             // run assertions
-            chai.expect(setComponentConfigSpy.calledOnce).to.be.true;
-            chai.expect(setComponentConfigSpy.getCall(0).args[0]).to.be.equal(C);
-            chai.expect(setComponentConfigSpy.getCall(0).args[1]).to.be.equal(componentConfig);
-            chai.expect(Metadata.getComponentConfig(C)).to.be.equal(componentConfig);
+            expect(setComponentConfigSpy.calledOnce).toBeTrue();
+            expect(setComponentConfigSpy.getCall(0).args[0]).toEqual(C);
+            expect(setComponentConfigSpy.getCall(0).args[1]).toEqual(componentConfig);
+            expect(Metadata.getComponentConfig(C)).toEqual(componentConfig);
         });
     });
 
@@ -76,10 +74,10 @@ describe('Decorator functions', () => {
             class P {}
 
             // run assertions
-            chai.expect(setProviderConfigSpy.calledOnce).to.be.true;
-            chai.expect(setProviderConfigSpy.getCall(0).args[0]).to.be.equal(P);
-            chai.expect(setProviderConfigSpy.getCall(0).args[1]).to.be.true;
-            chai.expect(Metadata.getProviderConfig(P)).to.be.true;
+            expect(setProviderConfigSpy.calledOnce).toBeTrue();
+            expect(setProviderConfigSpy.getCall(0).args[0]).toEqual(P);
+            expect(setProviderConfigSpy.getCall(0).args[1]).toBeTrue();
+            expect(Metadata.getProviderConfig(P)).toBeTrue();
         });
     });
 
@@ -103,11 +101,11 @@ describe('Decorator functions', () => {
             @Component(componentConfig)
             class C {}
 
-            chai.expect(setInjectedProviderConfigSpy.callCount).to.be.equal(0);
+            expect(setInjectedProviderConfigSpy.callCount).toBe(0);
 
             const metadata = Metadata.getInjectedProviderConfig(C);
-            chai.expect(metadata).not.to.be.equal(undefined);
-            chai.expect(metadata).to.be.empty;
+            expect(metadata).not.toBeUndefined();
+            expect(metadata).toEqual([]);
         });
 
         it('should set inject metadata correctly to the components', () => {
@@ -118,15 +116,15 @@ describe('Decorator functions', () => {
                 constructor(@Inject(I) private readonly i: I) {}
             }
 
-            chai.expect(setInjectedProviderConfigSpy.calledOnce).to.be.true;
-            chai.expect(setInjectedProviderConfigSpy.getCall(0).args[0]).to.be.equal(C);
-            chai.expect(setInjectedProviderConfigSpy.getCall(0).args[1]).to.be.equal(I);
-            chai.expect(setInjectedProviderConfigSpy.getCall(0).args[2]).to.be.equal(0);
+            expect(setInjectedProviderConfigSpy.calledOnce).toBeTrue();
+            expect(setInjectedProviderConfigSpy.getCall(0).args[0]).toEqual(C);
+            expect(setInjectedProviderConfigSpy.getCall(0).args[1]).toEqual(I);
+            expect(setInjectedProviderConfigSpy.getCall(0).args[2]).toBe(0);
             // retrieve saved metadata - only the first, since only one injected provider exists
             const {providerClass, targetParameterIndex} = Metadata.getInjectedProviderConfig(C)[0];
 
-            chai.expect(providerClass).to.be.equal(I);
-            chai.expect(targetParameterIndex).to.be.equal(0);
+            expect(providerClass).toEqual(I);
+            expect(targetParameterIndex).toBe(0);
         });
 
         it('should keep the injected provider order', () => {
@@ -139,24 +137,24 @@ describe('Decorator functions', () => {
                 constructor(@Inject(I) private readonly i: I, @Inject(J) private readonly j: J) {}
             }
 
-            chai.expect(setInjectedProviderConfigSpy.calledTwice).to.be.true;
+            expect(setInjectedProviderConfigSpy.calledTwice).toBeTrue();
             // decorator execution order : rtl
             // first call
-            chai.expect(setInjectedProviderConfigSpy.getCall(0).args[0]).to.be.equal(C);
-            chai.expect(setInjectedProviderConfigSpy.getCall(0).args[1]).to.be.equal(J);
-            chai.expect(setInjectedProviderConfigSpy.getCall(0).args[2]).to.be.equal(1);
+            expect(setInjectedProviderConfigSpy.getCall(0).args[0]).toEqual(C);
+            expect(setInjectedProviderConfigSpy.getCall(0).args[1]).toEqual(J);
+            expect(setInjectedProviderConfigSpy.getCall(0).args[2]).toBe(1);
             // second call
-            chai.expect(setInjectedProviderConfigSpy.getCall(1).args[0]).to.be.equal(C);
-            chai.expect(setInjectedProviderConfigSpy.getCall(1).args[1]).to.be.equal(I);
-            chai.expect(setInjectedProviderConfigSpy.getCall(1).args[2]).to.be.equal(0);
+            expect(setInjectedProviderConfigSpy.getCall(1).args[0]).toEqual(C);
+            expect(setInjectedProviderConfigSpy.getCall(1).args[1]).toEqual(I);
+            expect(setInjectedProviderConfigSpy.getCall(1).args[2]).toBe(0);
             // retrieve saved metadata
             const [j, i] = Metadata.getInjectedProviderConfig(C);
             // first provider in metadata config
-            chai.expect(j.providerClass).to.be.equal(J);
-            chai.expect(j.targetParameterIndex).to.be.equal(1);
+            expect(j.providerClass).toEqual(J);
+            expect(j.targetParameterIndex).toBe(1);
             // second provider in metadata config
-            chai.expect(i.providerClass).to.be.equal(I);
-            chai.expect(i.targetParameterIndex).to.be.equal(0);
+            expect(i.providerClass).toEqual(I);
+            expect(i.targetParameterIndex).toBe(0);
         });
     });
 
@@ -180,10 +178,10 @@ describe('Decorator functions', () => {
             @Component(componentConfig)
             class C {}
 
-            chai.expect(setComponentInputConfigSpy.callCount).to.be.equal(0);
+            // expect(setComponentInputConfigSpy.callCount).to.be.equal(0);
             const metadata = Metadata.getComponentInputConfig(C);
-            chai.expect(metadata).not.to.be.equal(undefined);
-            chai.expect(metadata).to.be.empty;
+            expect(metadata).not.toBeUndefined();
+            expect(metadata).toEqual([]);
         });
 
         it('should set input metadata correctly', () => {
@@ -196,17 +194,17 @@ describe('Decorator functions', () => {
                 k!: string;
             }
 
-            chai.expect(setComponentInputConfigSpy.calledTwice).to.be.true;
+            expect(setComponentInputConfigSpy.calledTwice).toBeTrue();
             // first call
-            chai.expect(setComponentInputConfigSpy.getCall(0).args[0] instanceof Object).to.be.true;
-            chai.expect(setComponentInputConfigSpy.getCall(0).args[0].constructor).to.be.equal(C);
-            chai.expect(setComponentInputConfigSpy.getCall(0).args[1]).to.be.equal('p');
-            chai.expect(setComponentInputConfigSpy.getCall(0).args[2]).to.be.equal('p');
+            expect(setComponentInputConfigSpy.getCall(0).args[0] instanceof Object).toBeTrue();
+            expect(setComponentInputConfigSpy.getCall(0).args[0].constructor).toEqual(C);
+            expect(setComponentInputConfigSpy.getCall(0).args[1]).toBe('p');
+            expect(setComponentInputConfigSpy.getCall(0).args[2]).toBe('p');
             // second call
-            chai.expect(setComponentInputConfigSpy.getCall(1).args[0] instanceof Object).to.be.true;
-            chai.expect(setComponentInputConfigSpy.getCall(1).args[0].constructor).to.be.equal(C);
-            chai.expect(setComponentInputConfigSpy.getCall(1).args[1]).to.be.equal('k');
-            chai.expect(setComponentInputConfigSpy.getCall(1).args[2]).to.be.equal('named');
+            expect(setComponentInputConfigSpy.getCall(1).args[0] instanceof Object).toBeTrue();
+            expect(setComponentInputConfigSpy.getCall(1).args[0].constructor).toEqual(C);
+            expect(setComponentInputConfigSpy.getCall(1).args[1]).toBe('k');
+            expect(setComponentInputConfigSpy.getCall(1).args[2]).toBe('named');
         });
     });
 });

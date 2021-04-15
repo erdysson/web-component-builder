@@ -1,14 +1,14 @@
 {
     "compilerOptions": {
-        "incremental": false,
         "target": "ESNext",
-        "module": "CommonJS",
+        "module": "ESNext",
         "lib": ["ESNext", "DOM"],
-        "rootDir": ".",
+        "outDir": "../lib",
         "strict": true,
         "noImplicitAny": true,
         "moduleResolution": "node",
-        "typeRoots": ["node_modules/@types"],
+        "types": ["jasmine"],
+        "typeRoots": ["../node_modules/@types"],
         "allowSyntheticDefaultImports": true,
         "esModuleInterop": true,
         "resolveJsonModule": true,
@@ -23,10 +23,7 @@
             "path": "../src"
         }
     ],
-    "include": [
-        "./**/*.spec.ts"
-    ],
     "exclude": [
-        "node_modules"
+        "**/node_modules/**"
     ]
 }
