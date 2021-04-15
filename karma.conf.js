@@ -5,6 +5,31 @@ module.exports = (config) => {
         preprocessors: {
             '**/*.ts': ['karma-typescript']
         },
+        karmaTypescriptConfig: {
+            coverageOptions: {
+                threshold: {
+                    // global: {
+                    //     statements: 90,
+                    //     branches: 90,
+                    //     functions: 90,
+                    //     lines: 100
+                    //     // excludes: ['src/foo/**/*.js']
+                    // },
+                    file: {
+                        statements: 100,
+                        branches: 100,
+                        functions: 100,
+                        lines: 100
+                        // excludes: ['src/bar/**/*.js'],
+                        // overrides: {
+                        //     'src/file.js': {
+                        //         statements: 90
+                        //     }
+                        // }
+                    }
+                }
+            }
+        },
         reporters: ['spec', 'karma-typescript'],
         browsers: ['ChromeHeadless'],
         singleRun: true

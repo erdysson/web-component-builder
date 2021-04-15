@@ -196,12 +196,12 @@ describe('Decorator functions', () => {
 
             expect(setComponentInputConfigSpy.calledTwice).toBeTrue();
             // first call
-            expect(setComponentInputConfigSpy.getCall(0).args[0] instanceof Object).toBeTrue();
+            expect(setComponentInputConfigSpy.getCall(0).args[0]).toBeInstanceOf(Object);
             expect(setComponentInputConfigSpy.getCall(0).args[0].constructor).toEqual(C);
             expect(setComponentInputConfigSpy.getCall(0).args[1]).toBe('p');
             expect(setComponentInputConfigSpy.getCall(0).args[2]).toBe('p');
             // second call
-            expect(setComponentInputConfigSpy.getCall(1).args[0] instanceof Object).toBeTrue();
+            expect(setComponentInputConfigSpy.getCall(1).args[0]).toBeInstanceOf(Object);
             expect(setComponentInputConfigSpy.getCall(1).args[0].constructor).toEqual(C);
             expect(setComponentInputConfigSpy.getCall(1).args[1]).toBe('k');
             expect(setComponentInputConfigSpy.getCall(1).args[2]).toBe('named');

@@ -20,7 +20,7 @@ export class Metadata {
         return Reflect.getMetadata(METADATA_KEYS.COMPONENT, componentClass) as IComponentConfig;
     }
 
-    static setProviderConfig(providerClass: IClass, config: unknown = {}): void {
+    static setProviderConfig(providerClass: IClass, config: unknown): void {
         Reflect.defineMetadata(METADATA_KEYS.PROVIDER, config, providerClass);
     }
 
