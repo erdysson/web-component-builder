@@ -20,8 +20,8 @@ export interface IOnInit {
 
 export interface IChanges {
     [key: string]: {
-        oldValue: string;
-        newValue: string;
+        oldValue: string | null;
+        newValue: string | null;
     };
 }
 

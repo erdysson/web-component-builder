@@ -1,4 +1,4 @@
-import {IClass} from './interfaces';
+import {IClass, IModuleConfig} from './interfaces';
 import {Metadata} from './metadata';
 import {
     IInjectMetadataConfig,
@@ -11,19 +11,30 @@ import {
 export class Runtime {
     private readonly providerInstanceMap: WeakMap<IClass, unknown> = new WeakMap<IClass, unknown>();
 
+    private moduleConfig!: IModuleConfig;
+
     initModule(moduleClass: IClass): void {
-        const {components} = Metadata.getModuleConfig(moduleClass);
+        this.moduleConfig = Metadata.getModuleConfig(moduleClass);
+        const {components} = this.moduleConfig;
         // init components
         components.forEach((componentClass: IClass) => this.initComponent(componentClass));
     }
 
     initProvider(providerClass: IClass): void {
+        const {providers} = this.moduleConfig;
         const providerConfig = Metadata.getProviderConfig(providerClass);
-        // just validate and make sure that class is decorated with @WCProvider()
-        if (!providerConfig) {
-            throw Error('Injected provider is not decorated with @WCProvider().');
+        // validate and make sure that class is registered in the module
+        if (!providers.includes(providerClass)) {
+            throw Error('Injected provider is not registered in the module');
         }
-        this.createProviderInstance(providerClass);
+        // validate and make sure that class is decorated with @Injectable()
+        if (!providerConfig) {
+            throw Error('Injected provider is not decorated with @Injectable().');
+        }
+        // create instance only if does not exist
+        if (!this.providerInstanceMap.has(providerClass)) {
+            this.createProviderInstance(providerClass);
+        }
     }
 
     initComponent(componentClass: IClass): void {
@@ -45,14 +56,11 @@ export class Runtime {
         customElements.define(selector, componentFactory);
     }
 
-    private createProviderInstance(providerClass: IClass): void {
-        if (this.providerInstanceMap.has(providerClass)) {
-            return;
-        }
+    createProviderInstance(providerClass: IClass): void {
         const injectMetadata = Metadata.getInjectedProviderConfig(providerClass) || [];
         // create dependency instances first
         injectMetadata.forEach((injectConfig: IInjectMetadataConfig) => {
-            this.createProviderInstance(injectConfig.providerClass);
+            this.initProvider(injectConfig.providerClass);
         });
         // all dependencies are initiated, now create the wrapping provider with injected params
         const constructorParams = this.getHostClassConstructorParams(injectMetadata);
@@ -62,7 +70,7 @@ export class Runtime {
         this.providerInstanceMap.set(providerClass, providerInstance);
     }
 
-    private getHostClassConstructorParams(injectMetadata: TWcInjectMetadata): unknown[] {
+    getHostClassConstructorParams(injectMetadata: TWcInjectMetadata): unknown[] {
         return injectMetadata
             .sort(
                 (config1: IInjectMetadataConfig, config2: IInjectMetadataConfig) =>
@@ -71,7 +79,7 @@ export class Runtime {
             .map((config: IInjectMetadataConfig) => this.providerInstanceMap.get(config.providerClass));
     }
 
-    private getComponentFactory(
+    getComponentFactory(
         componentClass: IClass,
         componentClassConstructorParams: unknown[],
         componentInputs: TInputMetadata,
@@ -91,6 +99,7 @@ export class Runtime {
                 setTimeout(() => {
                     // the way for it to work on IE11 and applying global styles to the components
                     this.insertAdjacentHTML('beforeend', componentTemplate);
+                    // todo : add afterViewInit lc method
                 });
             }
 
@@ -99,24 +108,22 @@ export class Runtime {
             }
 
             connectedCallback() {
-                const observedAttributes = RunTimeWebComponentClass.observedAttributes;
-                observedAttributes.forEach((attr: string) => {
-                    // read the initial attribute values
-                    const [propertyKey, attrValue] = this.getPropertyKeyAttrPair(attr);
-                    // update the value in component instance
-                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                    // @ts-ignore
-                    this.componentInstance[propertyKey] = attrValue;
-                });
-
+                // prevent multiple connectedCallbacks
                 if (this.isConnected) {
+                    // const observedAttributes = RunTimeWebComponentClass.observedAttributes;
+                    // observedAttributes.forEach((attr: string) => {
+                    //     // read the initial attribute values
+                    //     const [propertyKey, attrValue] = this.getPropertyKeyAttrPair(attr);
+                    //     // update the value in component instance
+                    //     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    //     // @ts-ignore
+                    //     this.componentInstance[propertyKey] = attrValue;
+                    // });
                     // call the onInit if exists
-                    if (this.componentInstance.onInit) {
-                        this.componentInstance.onInit.bind(this.componentInstance)();
-                    }
+                    this.componentInstance.onInit?.bind(this.componentInstance)();
                 }
             }
-
+            // todo : fix multi input triggers more than once onChanges in the beginning
             attributeChangedCallback(name: string, oldValue: string, newValue: string) {
                 // map the class property name for the reflection of attr changes
                 const inputConfigForChange = componentInputs.find((input) => input.inputAttributeName === name);
@@ -129,16 +136,12 @@ export class Runtime {
                 // @ts-ignore
                 this.componentInstance[inputConfigForChange.componentPropertyKey] = newValue;
                 // call the onChanges if exists
-                if (this.componentInstance.onChanges) {
-                    this.componentInstance.onChanges.bind(this.componentInstance)({[name]: {oldValue, newValue}});
-                }
+                this.componentInstance.onChanges?.bind(this.componentInstance)({[name]: {oldValue, newValue}});
             }
 
             disconnectedCallback() {
                 // call the onDestroy if exists
-                if (this.componentInstance.onDestroy) {
-                    this.componentInstance.onDestroy.bind(this.componentInstance)();
-                }
+                this.componentInstance.onDestroy?.bind(this.componentInstance)();
             }
 
             private getPropertyKeyAttrPair(attr: string): [string, string | null] {

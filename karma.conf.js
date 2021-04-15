@@ -6,6 +6,9 @@ module.exports = (config) => {
             '**/*.ts': ['karma-typescript']
         },
         karmaTypescriptConfig: {
+            compilerOptions: {
+                target: 'ESNext'
+            },
             coverageOptions: {
                 threshold: {
                     // global: {
