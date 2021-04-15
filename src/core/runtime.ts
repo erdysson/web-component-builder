@@ -99,7 +99,12 @@ export class Runtime {
                 setTimeout(() => {
                     // the way for it to work on IE11 and applying global styles to the components
                     this.insertAdjacentHTML('beforeend', componentTemplate);
-                    // todo : add afterViewInit lc method
+
+                    // call afterViewInit if exists
+                    if (this.isConnected) {
+                        console.log('is connected', this.isConnected);
+                        this.componentInstance.onViewInit?.bind(this.componentInstance)();
+                    }
                 });
             }
 
@@ -110,15 +115,6 @@ export class Runtime {
             connectedCallback() {
                 // prevent multiple connectedCallbacks
                 if (this.isConnected) {
-                    // const observedAttributes = RunTimeWebComponentClass.observedAttributes;
-                    // observedAttributes.forEach((attr: string) => {
-                    //     // read the initial attribute values
-                    //     const [propertyKey, attrValue] = this.getPropertyKeyAttrPair(attr);
-                    //     // update the value in component instance
-                    //     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                    //     // @ts-ignore
-                    //     this.componentInstance[propertyKey] = attrValue;
-                    // });
                     // call the onInit if exists
                     this.componentInstance.onInit?.bind(this.componentInstance)();
                 }
@@ -127,6 +123,7 @@ export class Runtime {
             attributeChangedCallback(name: string, oldValue: string, newValue: string) {
                 // map the class property name for the reflection of attr changes
                 const inputConfigForChange = componentInputs.find((input) => input.inputAttributeName === name);
+
                 // if can not be found, then means there is a problem with code!
                 if (!inputConfigForChange) {
                     throw Error(`watched attribute ${name} is not bound properly to the @WcInput() decorated property`);
@@ -135,6 +132,7 @@ export class Runtime {
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore
                 this.componentInstance[inputConfigForChange.componentPropertyKey] = newValue;
+
                 // call the onChanges if exists
                 this.componentInstance.onChanges?.bind(this.componentInstance)({[name]: {oldValue, newValue}});
             }
@@ -142,16 +140,6 @@ export class Runtime {
             disconnectedCallback() {
                 // call the onDestroy if exists
                 this.componentInstance.onDestroy?.bind(this.componentInstance)();
-            }
-
-            private getPropertyKeyAttrPair(attr: string): [string, string | null] {
-                const value = this.getAttribute(attr);
-                const input = componentInputs.find((cInput) => cInput.inputAttributeName === attr);
-                // if can not be found, then means there is a problem with code!
-                if (!input) {
-                    throw Error(`watched attribute ${attr} is not bound properly to the @WcInput() decorated property`);
-                }
-                return [input.componentPropertyKey, value];
             }
         };
     }

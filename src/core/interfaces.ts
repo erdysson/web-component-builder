@@ -14,10 +14,6 @@ export interface IComponentConfig {
     template: string;
 }
 
-export interface IOnInit {
-    onInit(): void;
-}
-
 export interface IChanges {
     [key: string]: {
         oldValue: string | null;
@@ -27,6 +23,14 @@ export interface IChanges {
 
 export interface IOnChanges {
     onChanges(changes?: IChanges): void;
+}
+
+export interface IOnInit {
+    onInit(): void;
+}
+
+export interface IOnViewInit {
+    onViewInit(): void;
 }
 
 export interface IOnDestroy {

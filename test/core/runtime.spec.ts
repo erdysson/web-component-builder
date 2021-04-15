@@ -12,6 +12,7 @@ import {
     IOnChanges,
     IOnDestroy,
     IOnInit,
+    IOnViewInit,
     Module,
     Runtime
 } from '../../src';
@@ -328,18 +329,22 @@ describe('Runtime functions', () => {
         };
 
         @Component(componentConfigX)
-        class C1 implements IOnInit, IOnChanges, IOnDestroy {
+        class C1 implements IOnChanges, IOnInit, IOnViewInit, IOnDestroy {
             constructor(@Inject(P1) private p1: P1) {}
 
             @Input()
             index!: string;
 
+            onChanges(changes?: IChanges) {
+                console.log(...this.p1.sayWelcome(changes));
+            }
+
             onInit(): void {
                 console.log(this.p1.sayHello('C1:onInit'));
             }
 
-            onChanges(changes?: IChanges) {
-                console.log(...this.p1.sayWelcome(changes));
+            onViewInit(): void {
+                console.log(this.p1.sayHello('C1:onViewInit'));
             }
 
             onDestroy() {
@@ -377,11 +382,18 @@ describe('Runtime functions', () => {
         expect(componentSpy.onInit.calledOnce).toBeTrue();
         expect(providerSpy.sayHello.calledOnce).toBeTrue();
 
+        expect(componentSpy.onInit.calledBefore(componentSpy.onViewInit)).toBeTrue();
+
         setTimeout(() => {
+            // check async viewInit callbacks
+            expect(componentSpy.onViewInit.calledOnce).toBeTrue();
+            expect(providerSpy.sayHello.calledTwice).toBeTrue();
+
             // wait for async addition of template
             const compX = document.querySelector('comp-x');
             expect(compX).not.toBe(null);
             expect((compX as HTMLElement).innerHTML).toEqual(componentConfigX.template);
+
             // trigger changes
             (compX as HTMLElement).setAttribute('index', '1');
 
@@ -397,6 +409,11 @@ describe('Runtime functions', () => {
             // remove the element to trigger onDestroy
             (compX as HTMLElement).remove();
 
+            // validate other lifecycle method's total call counts
+            expect(componentSpy.onInit.calledOnce).toBeTrue();
+            expect(componentSpy.onViewInit.calledOnce).toBeTrue();
+            expect(componentSpy.onChanges.calledTwice).toBeTrue();
+
             // validate destroy
             expect(componentSpy.onDestroy.calledOnce).toBeTrue();
             expect(providerSpy.sayGoodbye.calledOnce).toBeTrue();
@@ -407,7 +424,7 @@ describe('Runtime functions', () => {
     });
 
     it('components should be initiated without errors if there is no lifecycle method', () => {
-
+        // todo
     });
 
     it('mismatched input - attribute pairs should throw error', () => {

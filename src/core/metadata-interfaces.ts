@@ -1,4 +1,4 @@
-import {IClass, IObject, IOnChanges, IOnDestroy, IOnInit} from './interfaces';
+import {IClass, IObject, IOnChanges, IOnDestroy, IOnInit, IOnViewInit} from './interfaces';
 
 export interface IInjectMetadataConfig {
     providerClass: IClass;
@@ -14,4 +14,4 @@ export interface IInputMetadataConfig {
 
 export type TInputMetadata = IInputMetadataConfig[];
 
-export type TComponentInstance = Partial<IOnInit & IOnChanges & IOnDestroy & IObject>;
+export type TComponentInstance = Partial<IOnChanges & IOnInit & IOnViewInit & IOnDestroy & IObject>;
