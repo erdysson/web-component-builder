@@ -306,7 +306,6 @@ describe('Runtime functions', () => {
         expect(createProviderInstanceSpy.callCount).toEqual(4);
     });
 
-    // todo : add check for afterViewInit
     it('getComponentFactory(...) should transform componentClass` lifecycle methods correctly', (done) => {
         @Injectable()
         class P1 {
@@ -368,17 +367,6 @@ describe('Runtime functions', () => {
         // addition of the component to DOM will initiate web component class instance over mapped factory class
         document.body.insertAdjacentHTML('beforeend', `<div id="comp-x-wrapper"><comp-x index="0"></comp-x></div>`);
 
-        const changes0: IChanges = {index: {oldValue: null, newValue: '0'}};
-
-        // validate initial changes
-        expect(componentSpy.onChanges.calledOnce).toBeTrue();
-        expect(componentSpy.onChanges.getCall(0).args[0]).toEqual(changes0);
-
-        expect(providerSpy.sayWelcome.calledOnce).toBeTrue();
-        expect(providerSpy.sayWelcome.getCall(0).args[0]).toEqual(changes0);
-
-        expect(componentSpy.onChanges.calledBefore(componentSpy.onInit)).toBeTrue();
-
         expect(componentSpy.onInit.calledOnce).toBeTrue();
         expect(providerSpy.sayHello.calledOnce).toBeTrue();
 
@@ -390,21 +378,21 @@ describe('Runtime functions', () => {
             expect(providerSpy.sayHello.calledTwice).toBeTrue();
 
             // wait for async addition of template
-            const compX = document.querySelector('comp-x');
+            const compX = document.querySelector(componentConfigX.selector);
             expect(compX).not.toBe(null);
             expect((compX as HTMLElement).innerHTML).toEqual(componentConfigX.template);
 
             // trigger changes
             (compX as HTMLElement).setAttribute('index', '1');
 
-            const changes1: IChanges = {index: {oldValue: '0', newValue: '1'}};
+            const changes: IChanges = {index: {oldValue: '0', newValue: '1'}};
 
             // validate changes
-            expect(componentSpy.onChanges.calledTwice).toBeTrue();
-            expect(componentSpy.onChanges.getCall(1).args[0]).toEqual(changes1);
+            expect(componentSpy.onChanges.calledOnce).toBeTrue();
+            expect(componentSpy.onChanges.getCall(0).args[0]).toEqual(changes);
 
-            expect(providerSpy.sayWelcome.calledTwice).toBeTrue();
-            expect(providerSpy.sayWelcome.getCall(1).args[0]).toEqual(changes1);
+            expect(providerSpy.sayWelcome.calledOnce).toBeTrue();
+            expect(providerSpy.sayWelcome.getCall(0).args[0]).toEqual(changes);
 
             // remove the element to trigger onDestroy
             (compX as HTMLElement).remove();
@@ -412,7 +400,7 @@ describe('Runtime functions', () => {
             // validate other lifecycle method's total call counts
             expect(componentSpy.onInit.calledOnce).toBeTrue();
             expect(componentSpy.onViewInit.calledOnce).toBeTrue();
-            expect(componentSpy.onChanges.calledTwice).toBeTrue();
+            expect(componentSpy.onChanges.calledOnce).toBeTrue();
 
             // validate destroy
             expect(componentSpy.onDestroy.calledOnce).toBeTrue();
@@ -423,20 +411,92 @@ describe('Runtime functions', () => {
         }, 0);
     });
 
-    it('components should be initiated without errors if there is no lifecycle method', () => {
-        // todo
+    it('components should be initiated without errors if there is no lifecycle method', (done) => {
+        const componentConfigTest: IComponentConfig = {
+            selector: 'comp-test',
+            template: '<div>Component Test</div>'
+        };
+
+        @Component(componentConfigTest)
+        class C {}
+
+        @Module({
+            components: [C],
+            providers: []
+        })
+        class M {}
+
+        bootstrap(M);
+
+        // add to DOM
+        document.body.insertAdjacentHTML('beforeend', '<div><comp-test index="0"></comp-test></div>');
+
+        setTimeout(() => {
+            const compTest = document.querySelector('comp-test');
+            expect(compTest).not.toBe(null);
+            expect((compTest as HTMLElement).innerHTML).toEqual(componentConfigTest.template);
+            // change attr
+            (compTest as HTMLElement).setAttribute('index', '1');
+            // remove from DOM
+            (compTest as HTMLElement).remove();
+            //
+            done();
+        });
     });
 
     it('mismatched input - attribute pairs should throw error', () => {
         // todo
     });
 
-    it('onChanges should not be triggered if there is no component input', () => {
+    it('onChanges() should not be triggered if there is no component input', () => {
         // todo
     });
 
-    it('multiple input fields should not trigger onChanges more than once before initialization', () => {
-        // todo
+    it('onChanges() should not trigger before onInit()', () => {
+        const componentConfigTest: IComponentConfig = {
+            selector: 'comp-tx',
+            template: '<div>Component Tx</div>'
+        };
+
+        @Component(componentConfigTest)
+        class C implements IOnChanges, IOnInit {
+            @Input()
+            private input1!: string;
+
+            @Input()
+            private input2!: string;
+
+            onChanges(changes: IChanges): void {
+                console.log('changes called', JSON.stringify(changes));
+            }
+
+            onInit() {
+                console.log('on init called');
+            }
+        }
+
+        @Module({
+            components: [C],
+            providers: []
+        })
+        class M {}
+
+        const componentSpy = sandbox.spy(C.prototype);
+
+        bootstrap(M);
+
+        // add to DOM
+        document.body.insertAdjacentHTML('beforeend', '<div><comp-tx input1="1" input2="2"></comp-tx></div>');
+
+        expect(componentSpy.onInit.calledOnce).toBeTrue();
+        expect(componentSpy.onChanges.callCount).toEqual(0);
+
+        const comp = document.querySelector(componentConfigTest.selector);
+
+        (comp as HTMLElement).setAttribute('input1', '-1');
+        (comp as HTMLElement).setAttribute('input2', '-2');
+
+        expect(componentSpy.onChanges.callCount).toEqual(2);
     });
 
     it('nested component initiations should be from inner to outer', () => {
