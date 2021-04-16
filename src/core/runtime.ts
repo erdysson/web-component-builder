@@ -97,6 +97,18 @@ export class Runtime {
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore
                 this._componentInstance = new componentClass(...componentClassConstructorParams);
+                componentInputs.forEach((input: IInputMetadataConfig) => {
+                    // if can not be found, then means there is a problem with code!
+                    if (!this.hasAttribute(input.inputAttributeName)) {
+                        throw new TypeError(
+                            `watched attribute ${input.inputAttributeName} is not mapped properly to the @Input() decorated property`
+                        );
+                    }
+                    // bind the initial input values to the component instance
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-ignore
+                    this._componentInstance[input.componentPropertyKey] = this.getAttribute(input.inputAttributeName);
+                });
                 // setTimeout is required because in IE11, the order of onInit() is different.
                 // to align the functionality across the browsers, setTimeout is needed here
                 setTimeout(() => {
@@ -114,18 +126,6 @@ export class Runtime {
 
             connectedCallback() {
                 this._initialized = true;
-                componentInputs.forEach((input: IInputMetadataConfig) => {
-                    // if can not be found, then means there is a problem with code!
-                    if (!this.hasAttribute(input.inputAttributeName)) {
-                        throw new TypeError(
-                            `watched attribute ${input.inputAttributeName} is not mapped properly to the @Input() decorated property`
-                        );
-                    }
-                    // bind the initial input values to the component instance
-                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                    // @ts-ignore
-                    this._componentInstance[input.componentPropertyKey] = this.getAttribute(input.inputAttributeName);
-                });
                 // call the onInit if exists
                 this._componentInstance.onInit?.bind(this._componentInstance)();
             }

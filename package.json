@@ -45,6 +45,7 @@
     "@types/sinon": "^9.0.11",
     "@typescript-eslint/eslint-plugin": "^4.21.0",
     "@typescript-eslint/parser": "^4.21.0",
+    "codecov": "^3.8.1",
     "eslint": "^7.23.0",
     "eslint-plugin-eslint-comments": "^3.2.0",
     "eslint-plugin-import": "^2.22.1",
