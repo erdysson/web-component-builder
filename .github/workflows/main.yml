@@ -30,6 +30,8 @@ jobs:
         run: npm run lib:build
       - name: Test
         run: npm run lib:test
+      - name: Increase version
+        run: npm version prepatch --preid=rc
       - uses: codecov/codecov-action@v1.3.2
       - name: Coverage Report
         with:
