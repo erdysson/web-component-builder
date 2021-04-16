@@ -13,9 +13,9 @@ import {
     IOnDestroy,
     IOnInit,
     IOnViewInit,
-    Module,
-    Runtime
+    Module
 } from '../../src';
+import {Runtime} from '../../src/core/runtime';
 
 describe('Runtime functions', () => {
     let sandbox: SinonSandbox;
@@ -292,7 +292,40 @@ describe('Runtime functions', () => {
         expect(createProviderInstanceSpy.callCount).toEqual(4);
     });
 
-    it('getComponentFactory(...) should transform componentClass` lifecycle methods correctly', (done) => {
+    it('components should be initiated without errors if there is no lifecycle method', (done) => {
+        const componentConfigTest: IComponentConfig = {
+            selector: 'comp-test',
+            template: '<div>Component Test</div>'
+        };
+
+        @Component(componentConfigTest)
+        class C {}
+
+        @Module({
+            components: [C],
+            providers: []
+        })
+        class M {}
+
+        bootstrap(M);
+
+        // add to DOM
+        document.body.insertAdjacentHTML('beforeend', '<div><comp-test index="0"></comp-test></div>');
+
+        setTimeout(() => {
+            const compTest = document.querySelector('comp-test');
+            expect(compTest).not.toBe(null);
+            expect((compTest as HTMLElement).innerHTML).toEqual(componentConfigTest.template);
+            // change attr
+            (compTest as HTMLElement).setAttribute('index', '1');
+            // remove from DOM
+            (compTest as HTMLElement).remove();
+            //
+            done();
+        });
+    });
+
+    it('component` lifecycle methods should be called in order', (done) => {
         @Injectable()
         class P1 {
             sayHello(name: string): string {
@@ -353,14 +386,18 @@ describe('Runtime functions', () => {
         // addition of the component to DOM will initiate web component class instance over mapped factory class
         document.body.insertAdjacentHTML('beforeend', `<div id="comp-x-wrapper"><comp-x index="0"></comp-x></div>`);
 
+        expect(componentSpy.onChanges.callCount).toEqual(0);
+
         expect(componentSpy.onInit.calledOnce).toBeTrue();
         expect(providerSpy.sayHello.calledOnce).toBeTrue();
 
         expect(componentSpy.onInit.calledBefore(componentSpy.onViewInit)).toBeTrue();
+        expect(componentSpy.onInit.calledBefore(componentSpy.onChanges)).toBeTrue();
 
         setTimeout(() => {
             // check async viewInit callbacks
             expect(componentSpy.onViewInit.calledOnce).toBeTrue();
+            expect(componentSpy.onViewInit.calledBefore(componentSpy.onChanges)).toBeTrue();
             expect(providerSpy.sayHello.calledTwice).toBeTrue();
 
             // wait for async addition of template
@@ -397,14 +434,19 @@ describe('Runtime functions', () => {
         }, 0);
     });
 
-    it('components should be initiated without errors if there is no lifecycle method', (done) => {
-        const componentConfigTest: IComponentConfig = {
-            selector: 'comp-test',
-            template: '<div>Component Test</div>'
+    it('mismatched input - attribute pairs should throw error', () => {
+        pending('Exception thrown by method can not be caught by Jasmine and causes all tests fail');
+
+        const componentConfig: IComponentConfig = {
+            selector: 'my-test-comp',
+            template: '<div>My Test Comp</div>'
         };
 
-        @Component(componentConfigTest)
-        class C {}
+        @Component(componentConfig)
+        class C {
+            @Input()
+            private test!: string;
+        }
 
         @Module({
             components: [C],
@@ -413,71 +455,20 @@ describe('Runtime functions', () => {
         class M {}
 
         bootstrap(M);
-
         // add to DOM
-        document.body.insertAdjacentHTML('beforeend', '<div><comp-test index="0"></comp-test></div>');
-
-        setTimeout(() => {
-            const compTest = document.querySelector('comp-test');
-            expect(compTest).not.toBe(null);
-            expect((compTest as HTMLElement).innerHTML).toEqual(componentConfigTest.template);
-            // change attr
-            (compTest as HTMLElement).setAttribute('index', '1');
-            // remove from DOM
-            (compTest as HTMLElement).remove();
-            //
-            done();
-        });
+        document.body.insertAdjacentHTML('beforeend', '<div><my-test-comp index="0"></my-test-comp></div>');
     });
-
-    // it('mismatched input - attribute pairs should throw error', () => {
-    //     // const componentFactorySpy = sandbox.spy(Runtime.prototype, 'getComponentFactory');
-    //     const componentConfig: IComponentConfig = {
-    //         selector: 'my-test-comp',
-    //         template: '<div>My Test Comp</div>'
-    //     };
-    //
-    //     @Component(componentConfig)
-    //     class C {
-    //         @Input()
-    //         private test!: string;
-    //     }
-    //
-    //     @Module({
-    //         components: [C],
-    //         providers: []
-    //     })
-    //     class M {}
-    //
-    //     bootstrap(M);
-    //     // add to DOM
-    //     document.body.insertAdjacentHTML('beforeend', '<div><my-test-comp index="0"></my-test-comp></div>');
-    // });
 
     it('onChanges() should not be triggered if there is no component input', () => {
-        // todo
-    });
-
-    it('onChanges() should not trigger before onInit()', () => {
-        const componentConfigTest: IComponentConfig = {
-            selector: 'comp-tx',
-            template: '<div>Component Tx</div>'
+        const componentConfig: IComponentConfig = {
+            selector: 'no-input-comp',
+            template: '<div>No Input Comp</div>'
         };
 
-        @Component(componentConfigTest)
-        class C implements IOnChanges, IOnInit {
-            @Input()
-            private input1!: string;
-
-            @Input()
-            private input2!: string;
-
-            onChanges(changes: IChanges): void {
-                console.log('changes called', JSON.stringify(changes));
-            }
-
-            onInit() {
-                console.log('on init called');
+        @Component(componentConfig)
+        class C implements IOnChanges {
+            onChanges(changes?: IChanges) {
+                console.log('on changes called', changes);
             }
         }
 
@@ -487,25 +478,98 @@ describe('Runtime functions', () => {
         })
         class M {}
 
+        bootstrap(M);
+
         const componentSpy = sandbox.spy(C.prototype);
+        // add to DOM
+        document.body.insertAdjacentHTML('beforeend', '<div><no-input-comp index="0"></no-input-comp></div>');
+
+        expect(componentSpy.onChanges.callCount).toEqual(0);
+    });
+
+    it('nested component initiations should be from outer to inner', (done) => {
+        const innerConfig: IComponentConfig = {
+            selector: 'comp-inner',
+            template: '<div>Inner Comp</div>'
+        };
+        const middleConfig: IComponentConfig = {
+            selector: 'comp-middle',
+            template: '<div><comp-inner></comp-inner></div>'
+        };
+        const outerConfig: IComponentConfig = {
+            selector: 'comp-outer',
+            template: '<div><comp-middle></comp-middle></div>'
+        };
+
+        @Component(innerConfig)
+        class CInner implements IOnInit, IOnDestroy {
+            onInit() {
+                console.log('inner:on init called');
+            }
+            onDestroy() {
+                console.log('inner:on destroy called');
+            }
+        }
+
+        @Component(middleConfig)
+        class CMiddle implements IOnInit, IOnDestroy {
+            onInit() {
+                console.log('middle:on init called');
+            }
+            onDestroy() {
+                console.log('middle:on destroy called');
+            }
+        }
+
+        @Component(outerConfig)
+        class COuter implements IOnInit, IOnDestroy {
+            onInit() {
+                console.log('outer:on init called');
+            }
+            onDestroy() {
+                console.log('outer:on destroy called');
+            }
+        }
+
+        @Module({
+            components: [COuter, CMiddle, CInner],
+            providers: []
+        })
+        class M {}
 
         bootstrap(M);
 
+        const outerSpy = sandbox.spy(COuter.prototype);
+        const middleSpy = sandbox.spy(CMiddle.prototype);
+        const innerSpy = sandbox.spy(CInner.prototype);
         // add to DOM
-        document.body.insertAdjacentHTML('beforeend', '<div><comp-tx input1="1" input2="2"></comp-tx></div>');
+        document.body.insertAdjacentHTML('beforeend', '<div><comp-outer></comp-outer></div>');
+        // async check due to insertHTML async call
+        setTimeout(() => {
+            // inner check
+            expect(outerSpy.onInit.calledOnce).toBeTrue();
+            expect(outerSpy.onInit.calledBefore(middleSpy.onInit)).toBeTrue();
+            expect(outerSpy.onInit.calledBefore(innerSpy.onInit)).toBeTrue();
+            // middle check
+            expect(middleSpy.onInit.calledOnce).toBeTrue();
+            expect(middleSpy.onInit.calledBefore(innerSpy.onInit)).toBeTrue();
+            // outer
+            expect(innerSpy.onInit.calledOnce).toBeTrue();
+            // remove
+            const outer = document.querySelector(outerConfig.selector);
+            (outer as HTMLElement).remove();
+            // check onDestroy
+            // outer
+            expect(outerSpy.onDestroy.calledOnce).toBeTrue();
+            expect(outerSpy.onDestroy.calledBefore(middleSpy.onDestroy)).toBeTrue();
+            expect(outerSpy.onDestroy.calledBefore(innerSpy.onDestroy)).toBeTrue();
+            // middle
+            expect(middleSpy.onDestroy.calledOnce).toBeTrue();
+            expect(middleSpy.onDestroy.calledBefore(innerSpy.onDestroy)).toBeTrue();
+            // inner
+            expect(innerSpy.onDestroy.calledOnce).toBeTrue();
 
-        expect(componentSpy.onInit.calledOnce).toBeTrue();
-        expect(componentSpy.onChanges.callCount).toEqual(0);
-
-        const comp = document.querySelector(componentConfigTest.selector);
-
-        (comp as HTMLElement).setAttribute('input1', '-1');
-        (comp as HTMLElement).setAttribute('input2', '-2');
-
-        expect(componentSpy.onChanges.callCount).toEqual(2);
-    });
-
-    it('nested component initiations should be from inner to outer', () => {
-        // todo
+            done();
+        }, 50); // 50ms to make sure all init views are done
     });
 });

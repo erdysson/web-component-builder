@@ -1,6 +1,7 @@
 import {createSandbox, SinonSandbox, SinonSpy} from 'sinon';
 
-import {Component, IClass, IComponentConfig, Inject, Injectable, Input, IObject, Metadata, Module} from '../../src';
+import {Component, IClass, IComponentConfig, Inject, Injectable, Input, IObject, Module} from '../../src';
+import {Metadata} from '../../src/core/metadata';
 
 describe('Decorator functions', () => {
     // dummy component config
