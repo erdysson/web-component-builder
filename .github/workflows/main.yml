@@ -33,5 +33,9 @@ jobs:
       - uses: codecov/codecov-action@v1.3.2
       - name: Coverage Report
         with:
-          token: 113e05fe-982f-44e1-a6c9-200515351cbc
+          token: ${{ secrets.CODECOV_TOKEN }}
         run: codecov
+      - name: NPM Publish
+        uses: JS-DevTools/npm-publish@v1
+        with:
+          token: ${{ secrets.NPM_PUBLISH_TOKEN }}
