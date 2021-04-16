@@ -1,6 +1,6 @@
 {
   "name": "web-component-builder",
-  "version": "1.0.0-rc.6",
+  "version": "1.0.0-rc.7",
   "description": "Web Component Builder with typescript decorators",
   "author": "Erdi Taner Goekalp",
   "keywords": [
