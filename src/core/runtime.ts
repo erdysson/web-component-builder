@@ -1,4 +1,4 @@
-import {IChanges, IClass, IModuleConfig} from './interfaces';
+import {IClass, IModuleConfig} from './interfaces';
 import {Metadata} from './metadata';
 import {
     IInjectMetadataConfig,
@@ -79,6 +79,7 @@ export class Runtime {
             .map((config: IInjectMetadataConfig) => this.providerInstanceMap.get(config.providerClass));
     }
 
+    // todo : add type conversion to the inputs
     getComponentFactory(
         componentClass: IClass,
         componentClassConstructorParams: unknown[],
@@ -86,16 +87,16 @@ export class Runtime {
         componentTemplate: string
     ): IClass<CustomElementConstructor> {
         return class RunTimeWebComponentClass extends HTMLElement {
-            private readonly __componentInstance: TComponentInstance;
+            private readonly _componentInstance: TComponentInstance;
 
-            private __initialized = false;
+            private _initialized = false;
 
             constructor() {
                 super();
                 // create mapped component instance
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore
-                this.__componentInstance = new componentClass(...componentClassConstructorParams);
+                this._componentInstance = new componentClass(...componentClassConstructorParams);
                 // setTimeout is required because in IE11, the order of onInit() is different.
                 // to align the functionality across the browsers, setTimeout is needed here
                 setTimeout(() => {
@@ -103,9 +104,7 @@ export class Runtime {
                     this.insertAdjacentHTML('beforeend', componentTemplate);
 
                     // call afterViewInit if exists
-                    if (this.isConnected) {
-                        this.__componentInstance.onViewInit?.bind(this.__componentInstance)();
-                    }
+                    this._componentInstance.onViewInit?.bind(this._componentInstance)();
                 });
             }
 
@@ -114,45 +113,42 @@ export class Runtime {
             }
 
             connectedCallback() {
-                // prevent multiple onInit calls
-                if (this.isConnected) {
-                    this.__initialized = true;
-                    // bind the initial input values to the component instance
-                    componentInputs.forEach((input: IInputMetadataConfig) => {
-                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                        // @ts-ignore
-                        this.__componentInstance[input.componentPropertyKey] = this.getAttribute(
-                            input.inputAttributeName
+                this._initialized = true;
+                componentInputs.forEach((input: IInputMetadataConfig) => {
+                    // if can not be found, then means there is a problem with code!
+                    if (!this.hasAttribute(input.inputAttributeName)) {
+                        throw new TypeError(
+                            `watched attribute ${input.inputAttributeName} is not mapped properly to the @Input() decorated property`
                         );
-                    });
-                    // call the onInit if exists
-                    this.__componentInstance.onInit?.bind(this.__componentInstance)();
-                }
+                    }
+                    // bind the initial input values to the component instance
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-ignore
+                    this._componentInstance[input.componentPropertyKey] = this.getAttribute(input.inputAttributeName);
+                });
+                // call the onInit if exists
+                this._componentInstance.onInit?.bind(this._componentInstance)();
             }
 
             attributeChangedCallback(name: string, oldValue: string, newValue: string) {
-                if (!this.__initialized) {
+                if (!this._initialized) {
                     return;
                 }
                 // map the class property name for the reflection of attr changes
                 const inputConfigForChange = componentInputs.find((input) => input.inputAttributeName === name);
 
-                // if can not be found, then means there is a problem with code!
-                if (!inputConfigForChange) {
-                    throw Error(`watched attribute ${name} is not mapped properly to the @Input() decorated property`);
-                }
                 // update the value in component instance
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore
-                this.__componentInstance[inputConfigForChange.componentPropertyKey] = newValue;
+                this._componentInstance[inputConfigForChange.componentPropertyKey] = newValue;
 
                 // call the onChanges if exists
-                this.__componentInstance.onChanges?.bind(this.__componentInstance)({[name]: {oldValue, newValue}});
+                this._componentInstance.onChanges?.bind(this._componentInstance)({[name]: {oldValue, newValue}});
             }
 
             disconnectedCallback() {
                 // call the onDestroy if exists
-                this.__componentInstance.onDestroy?.bind(this.__componentInstance)();
+                this._componentInstance.onDestroy?.bind(this._componentInstance)();
             }
         };
     }

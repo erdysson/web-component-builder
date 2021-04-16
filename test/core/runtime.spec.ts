@@ -80,11 +80,7 @@ describe('Runtime functions', () => {
     });
 
     it('initComponent(componentClass) should init components correctly', () => {
-        const initComponentSpy = sandbox.spy(Runtime.prototype, 'initComponent');
-        const initProviderSpy = sandbox.spy(Runtime.prototype, 'initProvider');
-        const createProviderInstanceSpy = sandbox.spy(Runtime.prototype, 'createProviderInstance');
-        const getConstructorParamsSpy = sandbox.spy(Runtime.prototype, 'getHostClassConstructorParams');
-        const getComponentFactorySpy = sandbox.spy(Runtime.prototype, 'getComponentFactory');
+        const runtimeSpy = sandbox.spy(Runtime.prototype);
         const customElementsDefineSpy = sandbox.spy(customElements, 'define');
 
         const componentConfigA: IComponentConfig = {
@@ -119,32 +115,26 @@ describe('Runtime functions', () => {
         bootstrap(M);
 
         // C1, C2
-        expect(initComponentSpy.calledTwice).toBeTrue();
+        expect(runtimeSpy.initComponent.calledTwice).toBeTrue();
         // C1, C2
-        expect(initComponentSpy.getCall(0).args[0]).toEqual(C1);
-        expect(initComponentSpy.getCall(1).args[0]).toEqual(C2);
+        expect(runtimeSpy.initComponent.getCall(0).args[0]).toEqual(C1);
+        expect(runtimeSpy.initComponent.getCall(1).args[0]).toEqual(C2);
         // C1 - only for P1 provider
-        expect(initProviderSpy.callCount).toEqual(1);
-        expect(initProviderSpy.getCall(0).args[0]).toEqual(P1);
+        expect(runtimeSpy.initProvider.callCount).toEqual(1);
+        expect(runtimeSpy.initProvider.getCall(0).args[0]).toEqual(P1);
         // P1 initiation
-        expect(createProviderInstanceSpy.calledOnce).toBeTrue();
+        expect(runtimeSpy.createProviderInstance.calledOnce).toBeTrue();
         // constructor params calls - C1, C2, and P1 = 3
-        expect(getConstructorParamsSpy.callCount).toEqual(3);
-        expect(getConstructorParamsSpy.returned([])).toBeTrue();
+        expect(runtimeSpy.getHostClassConstructorParams.callCount).toEqual(3);
+        expect(runtimeSpy.getHostClassConstructorParams.returned([])).toBeTrue();
         // component factory calls - C1, C2
-        expect(getComponentFactorySpy.calledTwice).toBeTrue();
+        expect(runtimeSpy.getComponentFactory.calledTwice).toBeTrue();
         // C1
-        expect(getComponentFactorySpy.getCall(0).args[0]).toEqual(C1);
-        // C1 - constructor params
-        expect(getComponentFactorySpy.getCall(0).args[1].length).toEqual(1);
-        expect(getComponentFactorySpy.getCall(0).args[1][0]).toBeInstanceOf(P1);
-        expect(getComponentFactorySpy.getCall(0).args[2]).toEqual([]);
-        expect(getComponentFactorySpy.getCall(0).args[3]).toEqual(componentConfigA.template);
+        expect(runtimeSpy.getComponentFactory.getCall(0).args.length).toEqual(4);
+        expect(runtimeSpy.getComponentFactory.getCall(0).args[0]).toBe(C1);
         // C2
-        expect(getComponentFactorySpy.getCall(1).args[0]).toEqual(C2);
-        expect(getComponentFactorySpy.getCall(1).args[1]).toEqual([]);
-        expect(getComponentFactorySpy.getCall(1).args[2]).toEqual([]);
-        expect(getComponentFactorySpy.getCall(1).args[3]).toEqual(componentConfigB.template);
+        expect(runtimeSpy.getComponentFactory.getCall(1).args.length).toEqual(4);
+        expect(runtimeSpy.getComponentFactory.getCall(1).args[0]).toBe(C2);
         // C1, C2
         expect(customElementsDefineSpy.calledTwice).toBeTrue();
         expect(customElementsDefineSpy.getCall(0).args[0]).toEqual(componentConfigA.selector);
@@ -152,9 +142,7 @@ describe('Runtime functions', () => {
     });
 
     it('initProvider(providerClass) should only be called if the providerClass is injected to a componentClass', () => {
-        const initProviderSpy = sandbox.spy(Runtime.prototype, 'initProvider');
-        const createProviderInstanceSpy = sandbox.spy(Runtime.prototype, 'createProviderInstance');
-        const getConstructorParamsSpy = sandbox.spy(Runtime.prototype, 'getHostClassConstructorParams');
+        const runtimeSpy = sandbox.spy(Runtime.prototype);
 
         @Injectable()
         class P1 {}
@@ -183,22 +171,21 @@ describe('Runtime functions', () => {
 
         bootstrap(M);
         // only for P3
-        expect(initProviderSpy.calledOnce).toBeTrue();
-        expect(initProviderSpy.getCall(0).args[0]).toEqual(P3);
+        expect(runtimeSpy.initProvider.calledOnce).toBeTrue();
+        expect(runtimeSpy.initProvider.getCall(0).args[0]).toEqual(P3);
         // only for P3
-        expect(createProviderInstanceSpy.calledOnce).toBeTrue();
-        expect(createProviderInstanceSpy.getCall(0).args[0]).toEqual(P3);
+        expect(runtimeSpy.createProviderInstance.calledOnce).toBeTrue();
+        expect(runtimeSpy.createProviderInstance.getCall(0).args[0]).toEqual(P3);
         // C1 and P3
-        expect(getConstructorParamsSpy.callCount).toBe(2);
+        expect(runtimeSpy.getHostClassConstructorParams.callCount).toBe(2);
         // constructor params for P3 - []
-        expect(getConstructorParamsSpy.returnValues[0]).toEqual([]);
+        expect(runtimeSpy.getHostClassConstructorParams.returnValues[0]).toEqual([]);
         // constructor params for C - [instanceof P1]
-        expect(getConstructorParamsSpy.returnValues[1][0]).toBeInstanceOf(P3);
+        expect(runtimeSpy.getHostClassConstructorParams.returnValues[1][0]).toBeInstanceOf(P3);
     });
 
     it('initProvider(providerClass) should throw exception, if the provider is not marked as @Injectable()', () => {
-        const initProviderSpy = sandbox.spy(Runtime.prototype, 'initProvider');
-        const createProviderInstanceSpy = sandbox.spy(Runtime.prototype, 'createProviderInstance');
+        const runtimeSpy = sandbox.spy(Runtime.prototype);
 
         @Injectable()
         class P1 {}
@@ -223,19 +210,18 @@ describe('Runtime functions', () => {
         try {
             bootstrap(M);
             // P1, P2
-            expect(initProviderSpy.callCount).toBe(2);
-            expect(initProviderSpy.getCall(0)).not.toThrowError();
-            expect(initProviderSpy.getCall(1)).toThrowError();
+            expect(runtimeSpy.initProvider.callCount).toBe(2);
+            expect(runtimeSpy.initProvider.getCall(0)).not.toThrowError();
+            expect(runtimeSpy.initProvider.getCall(1)).toThrowError();
             // only for P1
-            expect(createProviderInstanceSpy.calledOnce).toBeTrue();
+            expect(runtimeSpy.createProviderInstance.calledOnce).toBeTrue();
         } catch (e) {
             //
         }
     });
 
     it('initProvider(providerClass) should throw exception, if the provider is not registered in the module', () => {
-        const initProviderSpy = sandbox.spy(Runtime.prototype, 'initProvider');
-        const createProviderInstanceSpy = sandbox.spy(Runtime.prototype, 'createProviderInstance');
+        const runtimeSpy = sandbox.spy(Runtime.prototype);
 
         @Injectable()
         class P1 {}
@@ -257,10 +243,10 @@ describe('Runtime functions', () => {
         try {
             bootstrap(M);
             // P1
-            expect(initProviderSpy.callCount).toBe(1);
-            expect(initProviderSpy.getCall(0)).toThrowError();
+            expect(runtimeSpy.initProvider.callCount).toBe(1);
+            expect(runtimeSpy.initProvider.getCall(0)).toThrowError();
             // no provider should be created
-            expect(createProviderInstanceSpy.callCount).toBe(0);
+            expect(runtimeSpy.createProviderInstance.callCount).toBe(0);
         } catch (e) {
             //
         }
@@ -444,9 +430,29 @@ describe('Runtime functions', () => {
         });
     });
 
-    it('mismatched input - attribute pairs should throw error', () => {
-        // todo
-    });
+    // it('mismatched input - attribute pairs should throw error', () => {
+    //     // const componentFactorySpy = sandbox.spy(Runtime.prototype, 'getComponentFactory');
+    //     const componentConfig: IComponentConfig = {
+    //         selector: 'my-test-comp',
+    //         template: '<div>My Test Comp</div>'
+    //     };
+    //
+    //     @Component(componentConfig)
+    //     class C {
+    //         @Input()
+    //         private test!: string;
+    //     }
+    //
+    //     @Module({
+    //         components: [C],
+    //         providers: []
+    //     })
+    //     class M {}
+    //
+    //     bootstrap(M);
+    //     // add to DOM
+    //     document.body.insertAdjacentHTML('beforeend', '<div><my-test-comp index="0"></my-test-comp></div>');
+    // });
 
     it('onChanges() should not be triggered if there is no component input', () => {
         // todo
