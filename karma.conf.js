@@ -5,6 +5,10 @@ module.exports = (config) => {
         preprocessors: {
             '**/*.ts': ['karma-typescript']
         },
+        coverageReporter: {
+            type: 'lcov',
+            dir: 'coverage/'
+        },
         karmaTypescriptConfig: {
             compilerOptions: {
                 target: 'ESNext'
@@ -28,7 +32,7 @@ module.exports = (config) => {
                 }
             }
         },
-        reporters: ['spec', 'karma-typescript'],
+        reporters: ['coverage', 'karma-typescript'],
         browsers: ['ChromeHeadless'],
         singleRun: true
     });
