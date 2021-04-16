@@ -19,24 +19,29 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
-      # Runs a single command using the runners shell
+      #
       - name: Use NodeJS 12.x
         uses: actions/setup-node@v1
         with:
           node-version: 12.x
+      #
       - name: Install dependencies
         run: npm ci
+      #
       - name: Build web-component-builder package
         run: npm run lib:build
+      #
       - name: Test
         run: npm run lib:test
+      #
       - name: Increase version
         run: npm version prepatch --preid=rc
-      - uses: codecov/codecov-action@v1.3.2
+      #
       - name: Coverage Report
+      - uses: codecov/codecov-action@v1.3.2
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-        run: codecov
+      #
       - name: NPM Publish
         uses: JS-DevTools/npm-publish@v1
         with:
