@@ -2,7 +2,7 @@
 
 name: web-component-builder GitHub CI
 
-# Controls when the action will run. 
+# Controls when the action will run.
 on:
   # Triggers the workflow on push or pull request events but only for the master branch
   push:
@@ -37,3 +37,4 @@ jobs:
       - name: Coverage Report
         with:
           token: 113e05fe-982f-44e1-a6c9-200515351cbc
+        run: codecov
