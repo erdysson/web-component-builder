@@ -47,6 +47,7 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           npm version prepatch --preid=rc
+          git push
       #
       - name: NPM Publish
         uses: JS-DevTools/npm-publish@v1
