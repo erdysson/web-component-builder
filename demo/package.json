@@ -14,7 +14,7 @@
   "dependencies": {
     "@webcomponents/webcomponentsjs": "^2.5.0",
     "core-js": "^3.10.1",
-    "web-component-builder": "^1.0.0-rc.6"
+    "web-component-builder": "latest"
   },
   "devDependencies": {
     "@babel/core": "^7.13.13",
