@@ -38,11 +38,7 @@ module.exports = {
                 test: /\.(s?)css$/,
                 use: [MiniCssExtractPlugin.loader, 'css-loader', 'sass-loader'],
                 exclude: /node_modules/
-            },
-            // {
-            //     test: /\.css$/i,
-            //     use: [MiniCssExtractPlugin.loader, 'css-loader']
-            // },
+            }
         ]
     },
     plugins: [
