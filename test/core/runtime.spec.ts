@@ -313,7 +313,7 @@ describe('Runtime functions', () => {
         document.body.insertAdjacentHTML('beforeend', '<div><comp-test index="0"></comp-test></div>');
 
         setTimeout(() => {
-            const compTest = document.querySelector('comp-test');
+            const compTest = document.querySelector(componentConfigTest.selector);
             expect(compTest).not.toBe(null);
             expect((compTest as HTMLElement).innerHTML).toEqual(componentConfigTest.template);
             // change attr
@@ -571,5 +571,84 @@ describe('Runtime functions', () => {
 
             done();
         }, 50); // 50ms to make sure all init views are done
+    });
+
+    it('component instances for same components with different usage should be isolated ', (done) => {
+        const config: IComponentConfig = {
+            selector: 'isolated-comp',
+            template: '<div></div>'
+        };
+
+        @Component(config)
+        class C implements IOnInit, IOnDestroy, IOnChanges {
+            @Input()
+            private index!: string;
+
+            onChanges(changes: IChanges) {
+                console.log('changes', changes, 'index', this.getIndex());
+            }
+
+            onInit() {
+                console.log('inner:on init called', this.getIndex());
+            }
+
+            onDestroy() {
+                console.log('inner:on destroy called');
+            }
+
+            getIndex(): string {
+                return this.index;
+            }
+        }
+
+        @Module({
+            components: [C],
+            providers: []
+        })
+        class M {}
+
+        bootstrap(M);
+
+        const componentSpy = sandbox.spy(C.prototype);
+
+        document.body.insertAdjacentHTML(
+            'beforeend',
+            `<div id="c-1"><isolated-comp index="0"></isolated-comp></div>
+                   <div id="c-2"><isolated-comp index="1"></isolated-comp></div>`
+        );
+
+        setTimeout(() => {
+            expect(componentSpy.onInit.callCount).toEqual(2);
+            expect(componentSpy.getIndex.callCount).toEqual(2);
+            expect(componentSpy.getIndex.getCall(0).returnValue).toEqual('0');
+            expect(componentSpy.getIndex.getCall(1).returnValue).toEqual('1');
+            // trigger change in first comp
+            const firstComp = document.querySelector(`#c-1 > ${config.selector}`);
+            (firstComp as HTMLElement).setAttribute('index', '-1');
+
+            expect(componentSpy.onChanges.calledOnce).toBeTrue();
+            expect(componentSpy.getIndex.callCount).toEqual(3);
+            expect(componentSpy.getIndex.getCall(2).returnValue).toEqual('-1');
+
+            // trigger change in second comp
+            const secondComp = document.querySelector(`#c-2 > ${config.selector}`);
+            (secondComp as HTMLElement).setAttribute('index', '-2');
+
+            expect(componentSpy.onChanges.calledTwice).toBeTrue();
+            expect(componentSpy.getIndex.callCount).toEqual(4);
+            expect(componentSpy.getIndex.getCall(3).returnValue).toEqual('-2');
+
+            // delete first comp
+            (firstComp as HTMLElement).remove();
+
+            expect(componentSpy.onDestroy.calledOnce).toBeTrue();
+
+            // delete second comp
+            (secondComp as HTMLElement).remove();
+
+            expect(componentSpy.onDestroy.calledTwice).toBeTrue();
+
+            done();
+        });
     });
 });
