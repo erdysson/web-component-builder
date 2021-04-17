@@ -14,7 +14,7 @@ module.exports = [
             file: pkg.main,
             format: 'cjs'
         },
-        external: [...Object.keys(pkg.peerDependencies || {})],
+        external: [/@babel\/runtime/],
         plugins: [
             // Allow bundling cjs modules (unlike webpack, rollup doesn't understand cjs)
             commonjs(),
@@ -27,10 +27,20 @@ module.exports = [
             }),
             // babel plugin to add extras
             babel({
-                babelrc: true,
+                // https://github.com/rollup/plugins/tree/master/packages/babel#babelhelpers
                 babelHelpers: 'runtime',
                 extensions: ['.ts'],
-                exclude: '**/node_modules/**'
+                presets: [
+                    [
+                        '@babel/preset-env',
+                        {
+                            targets: '> 1%, ie 11, not dead',
+                            debug: true
+                        }
+                    ]
+                ],
+                plugins: ['@babel/transform-runtime'],
+                exclude: 'node_modules/**'
             }),
             bundleSize()
         ]
@@ -42,7 +52,7 @@ module.exports = [
             file: pkg.module,
             format: 'es'
         },
-        external: [...Object.keys(pkg.peerDependencies || {})],
+        external: [/@babel\/runtime/],
         plugins: [
             // Allow bundling cjs modules (unlike webpack, rollup doesn't understand cjs)
             commonjs(),
@@ -54,6 +64,24 @@ module.exports = [
                 tsconfig: 'src/tsconfig.json'
             }),
             // babel plugin to add extras
+            babel({
+                // https://github.com/rollup/plugins/tree/master/packages/babel#babelhelpers
+                babelHelpers: 'runtime',
+                extensions: ['.ts'],
+                presets: [
+                    [
+                        '@babel/preset-env',
+                        {
+                            targets: {
+                                esmodules: true
+                            },
+                            debug: true
+                        }
+                    ]
+                ],
+                plugins: ['@babel/transform-runtime'],
+                exclude: 'node_modules/**'
+            }),
             bundleSize()
         ]
     }

@@ -13,3 +13,6 @@
 
 - router project
 - swipe project
+
+- consider writing plugins for polyfills
+- solve ie11
