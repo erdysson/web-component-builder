@@ -15,6 +15,9 @@ module.exports = {
         hot: true
     },
     resolve: {
+        // webpack normally does not pick up the corresponding version based on browserslist
+        // that's why, to test on IE11, this hack is needed
+        mainFields: process.env.TARGET_ENV === 'default' ? ['main', 'module'] : ['module', 'main'],
         extensions: ['.ts', '.js']
     },
     module: {
@@ -69,5 +72,12 @@ module.exports = {
             }
         }
     },
-    target: process.env.NODE_ENV === 'development' ? 'web' : 'browserslist'
+    target: (() => {
+        // hack for different target env
+        if (process.env.TARGET_ENV === 'default') {
+            // note : HMR won't work with this
+            return ['web', 'es5'];
+        }
+        return process.env.NODE_ENV === 'development' ? 'web' : 'browserslist';
+    })()
 };
