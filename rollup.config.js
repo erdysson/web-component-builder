@@ -34,7 +34,7 @@ module.exports = [
                     [
                         '@babel/preset-env',
                         {
-                            targets: '> 1%, ie 11, not dead',
+                            targets: pkg.browserslist.default,
                             debug: true
                         }
                     ]
@@ -72,9 +72,7 @@ module.exports = [
                     [
                         '@babel/preset-env',
                         {
-                            targets: {
-                                esmodules: true
-                            },
+                            targets: pkg.browserslist.modern,
                             debug: true
                         }
                     ]
