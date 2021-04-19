@@ -1,6 +1,17 @@
 import {createSandbox, SinonSandbox, SinonSpy} from 'sinon';
 
-import {Component, IClass, IComponentConfig, Inject, Injectable, Input, IObject, Module} from '../../src';
+import {
+    Component,
+    IClass,
+    IComponentConfig,
+    Inject,
+    Injectable,
+    Input,
+    IObject,
+    Listen,
+    Module,
+    ViewChild
+} from '../../src';
 import {Metadata} from '../../src/core/metadata';
 
 describe('Decorator functions', () => {
@@ -179,7 +190,6 @@ describe('Decorator functions', () => {
             @Component(componentConfig)
             class C {}
 
-            // expect(setComponentInputConfigSpy.callCount).to.be.equal(0);
             const metadata = Metadata.getComponentInputConfig(C);
             expect(metadata).not.toBeUndefined();
             expect(metadata).toEqual([]);
@@ -206,6 +216,130 @@ describe('Decorator functions', () => {
             expect(setComponentInputConfigSpy.getCall(1).args[0].constructor).toEqual(C);
             expect(setComponentInputConfigSpy.getCall(1).args[1]).toBe('k');
             expect(setComponentInputConfigSpy.getCall(1).args[2]).toBe('named');
+        });
+    });
+
+    describe('@ViewChild() decorator', () => {
+        let sandbox: SinonSandbox;
+        let setViewChildConfigSpy: SinonSpy<
+            [componentInstance: IObject, componentPropertyKey: string, querySelector?: string | undefined],
+            void
+        >;
+
+        beforeEach(() => {
+            sandbox = createSandbox();
+            setViewChildConfigSpy = sandbox.spy(Metadata, 'setViewChildrenConfig');
+        });
+
+        afterEach(() => {
+            sandbox.restore();
+        });
+
+        it('should set metadata correctly', () => {
+            const componentConfig: IComponentConfig = {
+                selector: 'comp-with-child-selector1',
+                template: '<div>Template 1</div>'
+            };
+
+            @Component(componentConfig)
+            class C {
+                @ViewChild()
+                rootElement!: string;
+
+                @ViewChild('.with-selector')
+                childElement!: string;
+            }
+
+            expect(setViewChildConfigSpy.calledTwice).toBeTrue();
+            // first call
+            expect(setViewChildConfigSpy.getCall(0).args[0]).toBeInstanceOf(Object);
+            expect(setViewChildConfigSpy.getCall(0).args[0].constructor).toEqual(C);
+            expect(setViewChildConfigSpy.getCall(0).args[1]).toBe('rootElement');
+            expect(setViewChildConfigSpy.getCall(0).args[2]).toBe(undefined);
+            // second call
+            expect(setViewChildConfigSpy.getCall(1).args[0]).toBeInstanceOf(Object);
+            expect(setViewChildConfigSpy.getCall(1).args[0].constructor).toEqual(C);
+            expect(setViewChildConfigSpy.getCall(1).args[1]).toBe('childElement');
+            expect(setViewChildConfigSpy.getCall(1).args[2]).toBe('.with-selector');
+
+            const metadata = Metadata.getViewChildrenConfig(C);
+            expect(metadata).not.toBeUndefined();
+            expect(metadata[0]).toEqual({componentPropertyKey: 'rootElement', querySelector: undefined});
+            expect(metadata[1]).toEqual({componentPropertyKey: 'childElement', querySelector: '.with-selector'});
+        });
+    });
+
+    describe('@Listen() decorator', () => {
+        let sandbox: SinonSandbox;
+        let setEventListenerConfigSpy: SinonSpy<
+            [
+                componentInstance: IObject,
+                componentPropertyKey: string,
+                event: string,
+                querySelector: string,
+                predicate: () => boolean
+            ],
+            void
+        >;
+
+        beforeEach(() => {
+            sandbox = createSandbox();
+            setEventListenerConfigSpy = sandbox.spy(Metadata, 'setEventListenerConfig');
+        });
+
+        afterEach(() => {
+            sandbox.restore();
+        });
+
+        it('should set metadata correctly', () => {
+            const componentConfig: IComponentConfig = {
+                selector: 'comp-with-child-selector1',
+                template: '<div>Template 1</div>'
+            };
+
+            const predicate = () => true;
+
+            @Component(componentConfig)
+            class C {
+                @Listen('click')
+                rootClickListener(event: Event): void {
+                    console.log('event', event);
+                }
+
+                @Listen('click', '.child', predicate)
+                childClickListener(event: Event): void {
+                    console.log('child event', event);
+                }
+            }
+
+            expect(setEventListenerConfigSpy.calledTwice).toBeTrue();
+            // first call
+            expect(setEventListenerConfigSpy.getCall(0).args[0]).toBeInstanceOf(Object);
+            expect(setEventListenerConfigSpy.getCall(0).args[0].constructor).toEqual(C);
+            expect(setEventListenerConfigSpy.getCall(0).args[1]).toBe('rootClickListener');
+            expect(setEventListenerConfigSpy.getCall(0).args[2]).toBe('click');
+            expect(setEventListenerConfigSpy.getCall(0).args[3]).toBe('');
+            expect(setEventListenerConfigSpy.getCall(0).args[4]()).toBeTrue();
+            // second call
+            expect(setEventListenerConfigSpy.getCall(1).args[0]).toBeInstanceOf(Object);
+            expect(setEventListenerConfigSpy.getCall(1).args[0].constructor).toEqual(C);
+            expect(setEventListenerConfigSpy.getCall(1).args[1]).toBe('childClickListener');
+            expect(setEventListenerConfigSpy.getCall(1).args[2]).toBe('click');
+            expect(setEventListenerConfigSpy.getCall(1).args[3]).toBe('.child');
+            expect(setEventListenerConfigSpy.getCall(1).args[4]).toEqual(predicate);
+
+            const metadata = Metadata.getEventListenerConfig(C);
+            expect(metadata).not.toBeUndefined();
+            // 1st
+            expect(metadata[0].componentPropertyKey).toEqual('rootClickListener');
+            expect(metadata[0].event).toEqual('click');
+            expect(metadata[0].querySelector).toEqual('');
+            expect(typeof metadata[0].predicate).toBe('function');
+            // 2nd
+            expect(metadata[1].componentPropertyKey).toEqual('childClickListener');
+            expect(metadata[1].event).toEqual('click');
+            expect(metadata[1].querySelector).toEqual('.child');
+            expect(metadata[1].predicate).toEqual(predicate);
         });
     });
 });

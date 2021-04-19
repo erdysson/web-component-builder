@@ -23,7 +23,7 @@ export const ViewChild = (querySelector?: string): PropertyDecorator => (
     propertyKey: string | symbol
 ) => Metadata.setViewChildrenConfig(target, propertyKey as string, querySelector);
 
-export const Listen = (event: string, querySelector = '', predicate: () => boolean = () => true): PropertyDecorator => (
+export const Listen = (event: string, querySelector = '', predicate: () => boolean = () => true): MethodDecorator => (
     target: IObject,
     propertyKey: string | symbol
 ) => Metadata.setEventListenerConfig(target, propertyKey as string, event, querySelector, predicate);
