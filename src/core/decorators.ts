@@ -17,3 +17,13 @@ export const Inject = (providerClass: IClass): ParameterDecorator =>
 
 export const Input = (name?: string): PropertyDecorator => (target: IObject, propertyKey: string | symbol) =>
     Metadata.setComponentInputConfig(target, propertyKey as string, name || (propertyKey as string));
+
+export const ViewChild = (querySelector?: string): PropertyDecorator => (
+    target: IObject,
+    propertyKey: string | symbol
+) => Metadata.setViewChildrenConfig(target, propertyKey as string, querySelector);
+
+export const Listen = (event: string, querySelector = '', predicate: () => boolean = () => true): PropertyDecorator => (
+    target: IObject,
+    propertyKey: string | symbol
+) => Metadata.setEventListenerConfig(target, propertyKey as string, event, querySelector, predicate);

@@ -130,10 +130,10 @@ describe('Runtime functions', () => {
         // component factory calls - C1, C2
         expect(runtimeSpy.getComponentFactory.calledTwice).toBeTrue();
         // C1
-        expect(runtimeSpy.getComponentFactory.getCall(0).args.length).toEqual(4);
+        expect(runtimeSpy.getComponentFactory.getCall(0).args.length).toEqual(6);
         expect(runtimeSpy.getComponentFactory.getCall(0).args[0]).toBe(C1);
         // C2
-        expect(runtimeSpy.getComponentFactory.getCall(1).args.length).toEqual(4);
+        expect(runtimeSpy.getComponentFactory.getCall(1).args.length).toEqual(6);
         expect(runtimeSpy.getComponentFactory.getCall(1).args[0]).toBe(C2);
         // C1, C2
         expect(customElementsDefineSpy.calledTwice).toBeTrue();
@@ -651,4 +651,9 @@ describe('Runtime functions', () => {
             done();
         });
     });
+
+    // todo : add test for type inference tests - here
+    // todo : add test for view child decorator - decorators
+    // todo : add test for listener decorator - decorators
+    // todo : test lc methods on replacing existing wc - here
 });

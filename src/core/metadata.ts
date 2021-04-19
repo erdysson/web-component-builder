@@ -1,6 +1,12 @@
 import 'reflect-metadata';
 import {IClass, IComponentConfig, IModuleConfig, IObject} from './interfaces';
-import {IInjectMetadataConfig, TInputMetadata, TWcInjectMetadata} from './metadata-interfaces';
+import {
+    IInjectMetadataConfig,
+    TEventListenerMetadata,
+    TInputMetadata,
+    TViewChildrenMetadata,
+    TWcInjectMetadata
+} from './metadata-interfaces';
 import {METADATA_KEYS} from './metadata-keys';
 
 export class Metadata {
@@ -57,20 +63,88 @@ export class Metadata {
     ): void {
         const componentClass: IClass = componentInstance.constructor;
         const hasMetadata = Reflect.hasMetadata(METADATA_KEYS.INPUT, componentClass);
+        const typeConstructor = Metadata.getTypeMetadata(componentInstance, componentPropertyKey);
 
         if (!hasMetadata) {
             Reflect.defineMetadata(
                 METADATA_KEYS.INPUT,
-                [{componentPropertyKey, inputAttributeName}] as TInputMetadata,
+                [{componentPropertyKey, inputAttributeName, typeConstructor}] as TInputMetadata,
                 componentClass
             );
         } else {
             const inputMetadata = Metadata.getComponentInputConfig(componentClass);
-            inputMetadata.push({componentPropertyKey, inputAttributeName});
+            inputMetadata.push({
+                componentPropertyKey,
+                inputAttributeName,
+                typeConstructor
+            });
         }
     }
 
     static getComponentInputConfig(componentClass: IClass): TInputMetadata {
         return Reflect.getMetadata(METADATA_KEYS.INPUT, componentClass) || [];
+    }
+
+    static setViewChildrenConfig(
+        componentInstance: IObject,
+        componentPropertyKey: string,
+        querySelector?: string
+    ): void {
+        const componentClass: IClass = componentInstance.constructor;
+        const hasMetadata = Reflect.hasMetadata(METADATA_KEYS.VIEW_CHILD, componentClass);
+
+        if (!hasMetadata) {
+            Reflect.defineMetadata(
+                METADATA_KEYS.VIEW_CHILD,
+                [{componentPropertyKey, querySelector}] as TViewChildrenMetadata,
+                componentClass
+            );
+        } else {
+            const viewChildrenMetadata = Metadata.getViewChildrenConfig(componentClass);
+            viewChildrenMetadata.push({
+                componentPropertyKey,
+                querySelector
+            });
+        }
+    }
+
+    static getViewChildrenConfig(componentClass: IClass): TViewChildrenMetadata {
+        return Reflect.getMetadata(METADATA_KEYS.VIEW_CHILD, componentClass) || [];
+    }
+
+    static setEventListenerConfig(
+        componentInstance: IObject,
+        componentPropertyKey: string,
+        event: string,
+        querySelector: string,
+        predicate: () => boolean
+    ): void {
+        const componentClass: IClass = componentInstance.constructor;
+        const hasMetadata = Reflect.hasMetadata(METADATA_KEYS.EVENT_LISTENER, componentClass);
+
+        if (!hasMetadata) {
+            Reflect.defineMetadata(
+                METADATA_KEYS.EVENT_LISTENER,
+                [{componentPropertyKey, event, querySelector, predicate}] as TEventListenerMetadata,
+                componentClass
+            );
+        } else {
+            const viewChildrenMetadata = Metadata.getEventListenerConfig(componentClass);
+            viewChildrenMetadata.push({
+                componentPropertyKey,
+                event,
+                querySelector,
+                predicate
+            });
+        }
+    }
+
+    static getEventListenerConfig(componentClass: IClass): TEventListenerMetadata {
+        return Reflect.getMetadata(METADATA_KEYS.EVENT_LISTENER, componentClass) || [];
+    }
+
+    // eslint-disable-next-line @typescript-eslint/ban-types
+    static getTypeMetadata(target: IObject, propertyKey: string): Function {
+        return Reflect.getMetadata('design:type', target, propertyKey);
     }
 }

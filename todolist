@@ -1,18 +1,12 @@
-1 - clear README
-2 - type conversion
-3 - query selector decorators
-4 - event listener decorators
-5 - template loader? jsx?
-6 - cli tool
+todo list
 
+0 - clear README
+2 - shadow option
+3 - template loader? jsx?
+4 - styling strategy
 
-- styling strategy
-- shadow option
-- polyfills ?
+todo others
 
-
-- router project
-- swipe project
-
-- consider writing plugins for polyfills
-- solve ie11
+0 - cli tool
+1 - router project
+2 - swipe project

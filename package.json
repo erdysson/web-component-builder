@@ -50,7 +50,8 @@
     "tsc:build": "tsc -p src/tsconfig.json",
     "rollup:bundle": "rollup -c rollup.config.js",
     "lib:test": "karma start",
-    "lib:build": "npm run tsc:build && npm run rollup:bundle"
+    "lib:build": "npm run tsc:build && npm run rollup:bundle",
+    "lib:build:watch": "npm run tsc:build && npm run rollup:bundle -- -w"
   },
   "dependencies": {
     "@babel/runtime": "^7.13.10",
