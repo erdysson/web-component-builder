@@ -1,15 +1,15 @@
 import {createSandbox, SinonSandbox} from 'sinon';
 
 import {
+    Attr,
     bootstrap,
     Component,
-    IChanges,
+    IAttrChanges,
     IComponentConfig,
     IModuleConfig,
     Inject,
     Injectable,
-    Input,
-    IOnChanges,
+    IOnAttrChanges,
     IOnDestroy,
     IOnInit,
     IOnViewInit,
@@ -332,7 +332,7 @@ describe('Runtime functions', () => {
                 return `Hello ${name}`;
             }
 
-            sayWelcome(changes?: IChanges): unknown[] {
+            sayWelcome(changes?: IAttrChanges): unknown[] {
                 return ['Welcome', changes];
             }
 
@@ -347,13 +347,13 @@ describe('Runtime functions', () => {
         };
 
         @Component(componentConfigX)
-        class C1 implements IOnChanges, IOnInit, IOnViewInit, IOnDestroy {
+        class C1 implements IOnAttrChanges, IOnInit, IOnViewInit, IOnDestroy {
             constructor(@Inject(P1) private p1: P1) {}
 
-            @Input()
+            @Attr()
             index!: string;
 
-            onChanges(changes?: IChanges) {
+            onAttrChanges(changes?: IAttrChanges) {
                 console.log(...this.p1.sayWelcome(changes));
             }
 
@@ -386,18 +386,18 @@ describe('Runtime functions', () => {
         // addition of the component to DOM will initiate web component class instance over mapped factory class
         document.body.insertAdjacentHTML('beforeend', `<div id="comp-x-wrapper"><comp-x index="0"></comp-x></div>`);
 
-        expect(componentSpy.onChanges.callCount).toEqual(0);
+        expect(componentSpy.onAttrChanges.callCount).toEqual(0);
 
         expect(componentSpy.onInit.calledOnce).toBeTrue();
         expect(providerSpy.sayHello.calledOnce).toBeTrue();
 
         expect(componentSpy.onInit.calledBefore(componentSpy.onViewInit)).toBeTrue();
-        expect(componentSpy.onInit.calledBefore(componentSpy.onChanges)).toBeTrue();
+        expect(componentSpy.onInit.calledBefore(componentSpy.onAttrChanges)).toBeTrue();
 
         setTimeout(() => {
             // check async viewInit callbacks
             expect(componentSpy.onViewInit.calledOnce).toBeTrue();
-            expect(componentSpy.onViewInit.calledBefore(componentSpy.onChanges)).toBeTrue();
+            expect(componentSpy.onViewInit.calledBefore(componentSpy.onAttrChanges)).toBeTrue();
             expect(providerSpy.sayHello.calledTwice).toBeTrue();
 
             // wait for async addition of template
@@ -408,11 +408,11 @@ describe('Runtime functions', () => {
             // trigger changes
             (compX as HTMLElement).setAttribute('index', '1');
 
-            const changes: IChanges = {index: {oldValue: '0', newValue: '1'}};
+            const changes: IAttrChanges = {index: {oldValue: '0', newValue: '1'}};
 
             // validate changes
-            expect(componentSpy.onChanges.calledOnce).toBeTrue();
-            expect(componentSpy.onChanges.getCall(0).args[0]).toEqual(changes);
+            expect(componentSpy.onAttrChanges.calledOnce).toBeTrue();
+            expect(componentSpy.onAttrChanges.getCall(0).args[0]).toEqual(changes);
 
             expect(providerSpy.sayWelcome.calledOnce).toBeTrue();
             expect(providerSpy.sayWelcome.getCall(0).args[0]).toEqual(changes);
@@ -423,7 +423,7 @@ describe('Runtime functions', () => {
             // validate other lifecycle method's total call counts
             expect(componentSpy.onInit.calledOnce).toBeTrue();
             expect(componentSpy.onViewInit.calledOnce).toBeTrue();
-            expect(componentSpy.onChanges.calledOnce).toBeTrue();
+            expect(componentSpy.onAttrChanges.calledOnce).toBeTrue();
 
             // validate destroy
             expect(componentSpy.onDestroy.calledOnce).toBeTrue();
@@ -434,7 +434,7 @@ describe('Runtime functions', () => {
         }, 0);
     });
 
-    it('mismatched input - attribute pairs should throw error', () => {
+    it('mismatched attr - propertyKey pairs should throw error', () => {
         pending('Exception thrown by method can not be caught by Jasmine and causes all tests fail');
 
         const componentConfig: IComponentConfig = {
@@ -444,7 +444,7 @@ describe('Runtime functions', () => {
 
         @Component(componentConfig)
         class C {
-            @Input()
+            @Attr()
             private test!: string;
         }
 
@@ -459,15 +459,15 @@ describe('Runtime functions', () => {
         document.body.insertAdjacentHTML('beforeend', '<div><my-test-comp index="0"></my-test-comp></div>');
     });
 
-    it('onChanges() should not be triggered if there is no component input', () => {
+    it('onAttrChanges() should not be triggered if there is no component attr', () => {
         const componentConfig: IComponentConfig = {
-            selector: 'no-input-comp',
-            template: '<div>No Input Comp</div>'
+            selector: 'no-attr-comp',
+            template: '<div>No Attr Comp</div>'
         };
 
         @Component(componentConfig)
-        class C implements IOnChanges {
-            onChanges(changes?: IChanges) {
+        class C implements IOnAttrChanges {
+            onAttrChanges(changes?: IAttrChanges) {
                 console.log('on changes called', changes);
             }
         }
@@ -482,9 +482,9 @@ describe('Runtime functions', () => {
 
         const componentSpy = sandbox.spy(C.prototype);
         // add to DOM
-        document.body.insertAdjacentHTML('beforeend', '<div><no-input-comp index="0"></no-input-comp></div>');
+        document.body.insertAdjacentHTML('beforeend', '<div><no-attr-comp index="0"></no-attr-comp></div>');
 
-        expect(componentSpy.onChanges.callCount).toEqual(0);
+        expect(componentSpy.onAttrChanges.callCount).toEqual(0);
     });
 
     it('nested component initiations should be from outer to inner', (done) => {
@@ -580,11 +580,11 @@ describe('Runtime functions', () => {
         };
 
         @Component(config)
-        class C implements IOnInit, IOnDestroy, IOnChanges {
-            @Input()
+        class C implements IOnInit, IOnDestroy, IOnAttrChanges {
+            @Attr()
             private index!: string;
 
-            onChanges(changes: IChanges) {
+            onAttrChanges(changes: IAttrChanges) {
                 console.log('changes', changes, 'index', this.getIndex());
             }
 
@@ -626,7 +626,7 @@ describe('Runtime functions', () => {
             const firstComp = document.querySelector(`#c-1 > ${config.selector}`);
             (firstComp as HTMLElement).setAttribute('index', '-1');
 
-            expect(componentSpy.onChanges.calledOnce).toBeTrue();
+            expect(componentSpy.onAttrChanges.calledOnce).toBeTrue();
             expect(componentSpy.getIndex.callCount).toEqual(3);
             expect(componentSpy.getIndex.getCall(2).returnValue).toEqual('-1');
 
@@ -634,7 +634,7 @@ describe('Runtime functions', () => {
             const secondComp = document.querySelector(`#c-2 > ${config.selector}`);
             (secondComp as HTMLElement).setAttribute('index', '-2');
 
-            expect(componentSpy.onChanges.calledTwice).toBeTrue();
+            expect(componentSpy.onAttrChanges.calledTwice).toBeTrue();
             expect(componentSpy.getIndex.callCount).toEqual(4);
             expect(componentSpy.getIndex.getCall(3).returnValue).toEqual('-2');
 
@@ -652,8 +652,21 @@ describe('Runtime functions', () => {
         });
     });
 
-    // todo : add test for type inference tests - here
-    // todo : add test for view child decorator - decorators
-    // todo : add test for listener decorator - decorators
+    it('attr field types should be converted correctly', () => {
+        // todo
+    });
+
+    it('view children should be assigned correctly', () => {
+        // todo
+    });
+
+    it('event listeners should be set correctly', () => {
+        // todo
+    });
+
     // todo : test lc methods on replacing existing wc - here
+
+    // todo : test only attr changes
+
+    // todo : test prop changes
 });

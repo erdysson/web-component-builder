@@ -14,15 +14,15 @@ export interface IComponentConfig {
     template: string;
 }
 
-export interface IChanges {
+export interface IAttrChanges {
     [key: string]: {
         oldValue: string | null;
         newValue: string | null;
     };
 }
 
-export interface IOnChanges {
-    onChanges(changes?: IChanges): void;
+export interface IOnAttrChanges {
+    onAttrChanges(changes?: IAttrChanges): void;
 }
 
 export interface IOnInit {

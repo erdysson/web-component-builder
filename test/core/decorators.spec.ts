@@ -1,12 +1,12 @@
 import {createSandbox, SinonSandbox, SinonSpy} from 'sinon';
 
 import {
+    Attr,
     Component,
     IClass,
     IComponentConfig,
     Inject,
     Injectable,
-    Input,
     IObject,
     Listen,
     Module,
@@ -170,59 +170,56 @@ describe('Decorator functions', () => {
         });
     });
 
-    describe('@Input() decorator', () => {
+    describe('@Attr() decorator', () => {
         let sandbox: SinonSandbox;
-        let setComponentInputConfigSpy: SinonSpy<
-            [componentInstance: IObject, componentPropertyKey: string, inputAttributeName: string],
-            void
-        >;
+        let setComponentAttrConfigSpy: SinonSpy<[componentInstance: IObject, propertyKey: string, name: string], void>;
 
         beforeEach(() => {
             sandbox = createSandbox();
-            setComponentInputConfigSpy = sandbox.spy(Metadata, 'setComponentInputConfig');
+            setComponentAttrConfigSpy = sandbox.spy(Metadata, 'setComponentAttrConfig');
         });
 
         afterEach(() => {
             sandbox.restore();
         });
 
-        it('should have input metadata as [], if has no configured input fields', () => {
+        it('should have attr metadata as [], if has no configured attr fields', () => {
             @Component(componentConfig)
             class C {}
 
-            const metadata = Metadata.getComponentInputConfig(C);
+            const metadata = Metadata.getComponentAttrConfig(C);
             expect(metadata).not.toBeUndefined();
             expect(metadata).toEqual([]);
         });
 
-        it('should set input metadata correctly', () => {
+        it('should set attr metadata correctly', () => {
             @Component(componentConfig)
             class C {
-                @Input()
+                @Attr()
                 p!: string;
 
-                @Input('named')
+                @Attr('named')
                 k!: string;
             }
 
-            expect(setComponentInputConfigSpy.calledTwice).toBeTrue();
+            expect(setComponentAttrConfigSpy.calledTwice).toBeTrue();
             // first call
-            expect(setComponentInputConfigSpy.getCall(0).args[0]).toBeInstanceOf(Object);
-            expect(setComponentInputConfigSpy.getCall(0).args[0].constructor).toEqual(C);
-            expect(setComponentInputConfigSpy.getCall(0).args[1]).toBe('p');
-            expect(setComponentInputConfigSpy.getCall(0).args[2]).toBe('p');
+            expect(setComponentAttrConfigSpy.getCall(0).args[0]).toBeInstanceOf(Object);
+            expect(setComponentAttrConfigSpy.getCall(0).args[0].constructor).toEqual(C);
+            expect(setComponentAttrConfigSpy.getCall(0).args[1]).toBe('p');
+            expect(setComponentAttrConfigSpy.getCall(0).args[2]).toBe('p');
             // second call
-            expect(setComponentInputConfigSpy.getCall(1).args[0]).toBeInstanceOf(Object);
-            expect(setComponentInputConfigSpy.getCall(1).args[0].constructor).toEqual(C);
-            expect(setComponentInputConfigSpy.getCall(1).args[1]).toBe('k');
-            expect(setComponentInputConfigSpy.getCall(1).args[2]).toBe('named');
+            expect(setComponentAttrConfigSpy.getCall(1).args[0]).toBeInstanceOf(Object);
+            expect(setComponentAttrConfigSpy.getCall(1).args[0].constructor).toEqual(C);
+            expect(setComponentAttrConfigSpy.getCall(1).args[1]).toBe('k');
+            expect(setComponentAttrConfigSpy.getCall(1).args[2]).toBe('named');
         });
     });
 
     describe('@ViewChild() decorator', () => {
         let sandbox: SinonSandbox;
         let setViewChildConfigSpy: SinonSpy<
-            [componentInstance: IObject, componentPropertyKey: string, querySelector?: string | undefined],
+            [componentInstance: IObject, propertyKey: string, querySelector?: string | undefined],
             void
         >;
 
@@ -264,8 +261,8 @@ describe('Decorator functions', () => {
 
             const metadata = Metadata.getViewChildrenConfig(C);
             expect(metadata).not.toBeUndefined();
-            expect(metadata[0]).toEqual({componentPropertyKey: 'rootElement', querySelector: undefined});
-            expect(metadata[1]).toEqual({componentPropertyKey: 'childElement', querySelector: '.with-selector'});
+            expect(metadata[0]).toEqual({propertyKey: 'rootElement', querySelector: undefined});
+            expect(metadata[1]).toEqual({propertyKey: 'childElement', querySelector: '.with-selector'});
         });
     });
 
@@ -274,7 +271,7 @@ describe('Decorator functions', () => {
         let setEventListenerConfigSpy: SinonSpy<
             [
                 componentInstance: IObject,
-                componentPropertyKey: string,
+                propertyKey: string,
                 event: string,
                 querySelector: string,
                 predicate: () => boolean
@@ -331,12 +328,12 @@ describe('Decorator functions', () => {
             const metadata = Metadata.getEventListenerConfig(C);
             expect(metadata).not.toBeUndefined();
             // 1st
-            expect(metadata[0].componentPropertyKey).toEqual('rootClickListener');
+            expect(metadata[0].propertyKey).toEqual('rootClickListener');
             expect(metadata[0].event).toEqual('click');
             expect(metadata[0].querySelector).toEqual('');
             expect(typeof metadata[0].predicate).toBe('function');
             // 2nd
-            expect(metadata[1].componentPropertyKey).toEqual('childClickListener');
+            expect(metadata[1].propertyKey).toEqual('childClickListener');
             expect(metadata[1].event).toEqual('click');
             expect(metadata[1].querySelector).toEqual('.child');
             expect(metadata[1].predicate).toEqual(predicate);

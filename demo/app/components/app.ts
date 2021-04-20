@@ -1,27 +1,27 @@
 import {IOnInit} from 'web-component-builder';
-import {Component, Input, Listen, ViewChild} from 'web-component-builder';
+import {Attr, Component, Listen, ViewChild} from 'web-component-builder';
 
 @Component({
     selector: 'app-main',
     template: '<div><app-test></app-test></div>'
 })
 export class App implements IOnInit {
-    @Input()
+    @Attr()
     index!: number;
 
-    @Input()
+    @Attr()
     test!: boolean;
 
-    @Input()
+    @Attr()
     data: unknown;
 
-    @Input()
+    @Attr()
     str!: string;
 
-    @Input()
+    @Attr()
     unknown!: string | null;
 
-    @Input()
+    @Attr()
     notExist!: string | null;
 
     @ViewChild('app-test')

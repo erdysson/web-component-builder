@@ -1,6 +1,8 @@
 todo list
 
 0 - clear README
+1 - property decorator
+2 - event bus - or better mapping between component class and wc class
 2 - shadow option
 3 - template loader? jsx?
 4 - styling strategy

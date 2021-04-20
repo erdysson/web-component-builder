@@ -1,4 +1,4 @@
-import {IClass, IObject, IOnChanges, IOnDestroy, IOnInit, IOnViewInit} from './interfaces';
+import {IClass, IObject, IOnAttrChanges, IOnDestroy, IOnInit, IOnViewInit} from './interfaces';
 
 export interface IInjectMetadataConfig {
     providerClass: IClass;
@@ -7,24 +7,31 @@ export interface IInjectMetadataConfig {
 
 export type TWcInjectMetadata = IInjectMetadataConfig[];
 
-export interface IInputMetadataConfig {
-    componentPropertyKey: string;
-    inputAttributeName: string;
+export interface IAttrMetadataConfig {
+    propertyKey: string;
+    name: string;
     // eslint-disable-next-line @typescript-eslint/ban-types
     typeConstructor: Function;
 }
 
-export type TInputMetadata = IInputMetadataConfig[];
+export type TAttrMetadata = IAttrMetadataConfig[];
+
+export interface IPropMetadataConfig {
+    propertyKey: string;
+    name: string;
+}
+
+export type TPropMetadata = IPropMetadataConfig[];
 
 export interface IViewChildrenMetadataConfig {
-    componentPropertyKey: string;
+    propertyKey: string;
     querySelector?: string;
 }
 
 export type TViewChildrenMetadata = IViewChildrenMetadataConfig[];
 
 export interface IEventListenerMetadataConfig {
-    componentPropertyKey: string;
+    propertyKey: string;
     event: string;
     querySelector: string;
     predicate: () => boolean;
@@ -32,4 +39,4 @@ export interface IEventListenerMetadataConfig {
 
 export type TEventListenerMetadata = IEventListenerMetadataConfig[];
 
-export type TComponentInstance = Partial<IOnChanges & IOnInit & IOnViewInit & IOnDestroy & IObject>;
+export type TComponentInstance = Partial<IOnAttrChanges & IOnInit & IOnViewInit & IOnDestroy & IObject>;

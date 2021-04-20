@@ -11,10 +11,10 @@ Currently, capabilities are :
 * **`Component`** declarations with `selector` and inline `template`
 
 
-* **`Component`** **`inputs`** as custom element **`attributes`**
+* **`Component`** **`attributes`** as custom element **`attributes`**
 
 
-* **`Component`** lifecycle methods like **`onInit`**, **`onChanges`**, **`onViewInit`** and **`onDestroy`**
+* **`Component`** lifecycle methods like **`onInit`**, **`onAttrChanges`**, **`onViewInit`** and **`onDestroy`**
 
 
 * **`Dependency Injection`** through **`services / providers`**

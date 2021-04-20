@@ -2,8 +2,9 @@ import 'reflect-metadata';
 import {IClass, IComponentConfig, IModuleConfig, IObject} from './interfaces';
 import {
     IInjectMetadataConfig,
+    TAttrMetadata,
     TEventListenerMetadata,
-    TInputMetadata,
+    TPropMetadata,
     TViewChildrenMetadata,
     TWcInjectMetadata
 } from './metadata-interfaces';
@@ -56,53 +57,61 @@ export class Metadata {
         return (Reflect.getMetadata(METADATA_KEYS.INJECT, hostClass) || []) as TWcInjectMetadata;
     }
 
-    static setComponentInputConfig(
-        componentInstance: IObject,
-        componentPropertyKey: string,
-        inputAttributeName: string
-    ): void {
+    static setComponentAttrConfig(componentInstance: IObject, propertyKey: string, name: string): void {
         const componentClass: IClass = componentInstance.constructor;
-        const hasMetadata = Reflect.hasMetadata(METADATA_KEYS.INPUT, componentClass);
-        const typeConstructor = Metadata.getTypeMetadata(componentInstance, componentPropertyKey);
+        const hasMetadata = Reflect.hasMetadata(METADATA_KEYS.ATTR, componentClass);
+        const typeConstructor = Metadata.getTypeMetadata(componentInstance, propertyKey);
 
         if (!hasMetadata) {
             Reflect.defineMetadata(
-                METADATA_KEYS.INPUT,
-                [{componentPropertyKey, inputAttributeName, typeConstructor}] as TInputMetadata,
+                METADATA_KEYS.ATTR,
+                [{propertyKey, name, typeConstructor}] as TAttrMetadata,
                 componentClass
             );
         } else {
-            const inputMetadata = Metadata.getComponentInputConfig(componentClass);
-            inputMetadata.push({
-                componentPropertyKey,
-                inputAttributeName,
+            const attrMetadata = Metadata.getComponentAttrConfig(componentClass);
+            attrMetadata.push({
+                propertyKey,
+                name,
                 typeConstructor
             });
         }
     }
 
-    static getComponentInputConfig(componentClass: IClass): TInputMetadata {
-        return Reflect.getMetadata(METADATA_KEYS.INPUT, componentClass) || [];
+    static getComponentAttrConfig(componentClass: IClass): TAttrMetadata {
+        return Reflect.getMetadata(METADATA_KEYS.ATTR, componentClass) || [];
     }
 
-    static setViewChildrenConfig(
-        componentInstance: IObject,
-        componentPropertyKey: string,
-        querySelector?: string
-    ): void {
+    static setComponentPropConfig(componentInstance: IObject, propertyKey: string, name: string): void {
+        const componentClass: IClass = componentInstance.constructor;
+        const hasMetadata = Reflect.hasMetadata(METADATA_KEYS.PROP, componentClass);
+
+        if (!hasMetadata) {
+            Reflect.defineMetadata(METADATA_KEYS.PROP, [{propertyKey, name}] as TPropMetadata, componentClass);
+        } else {
+            const propMetadata = Metadata.getComponentPropConfig(componentClass);
+            propMetadata.push({propertyKey, name});
+        }
+    }
+
+    static getComponentPropConfig(componentClass: IClass): TPropMetadata {
+        return Reflect.getMetadata(METADATA_KEYS.PROP, componentClass) || [];
+    }
+
+    static setViewChildrenConfig(componentInstance: IObject, propertyKey: string, querySelector?: string): void {
         const componentClass: IClass = componentInstance.constructor;
         const hasMetadata = Reflect.hasMetadata(METADATA_KEYS.VIEW_CHILD, componentClass);
 
         if (!hasMetadata) {
             Reflect.defineMetadata(
                 METADATA_KEYS.VIEW_CHILD,
-                [{componentPropertyKey, querySelector}] as TViewChildrenMetadata,
+                [{propertyKey, querySelector}] as TViewChildrenMetadata,
                 componentClass
             );
         } else {
             const viewChildrenMetadata = Metadata.getViewChildrenConfig(componentClass);
             viewChildrenMetadata.push({
-                componentPropertyKey,
+                propertyKey,
                 querySelector
             });
         }
@@ -114,7 +123,7 @@ export class Metadata {
 
     static setEventListenerConfig(
         componentInstance: IObject,
-        componentPropertyKey: string,
+        propertyKey: string,
         event: string,
         querySelector: string,
         predicate: () => boolean
@@ -125,13 +134,13 @@ export class Metadata {
         if (!hasMetadata) {
             Reflect.defineMetadata(
                 METADATA_KEYS.EVENT_LISTENER,
-                [{componentPropertyKey, event, querySelector, predicate}] as TEventListenerMetadata,
+                [{propertyKey, event, querySelector, predicate}] as TEventListenerMetadata,
                 componentClass
             );
         } else {
             const viewChildrenMetadata = Metadata.getEventListenerConfig(componentClass);
             viewChildrenMetadata.push({
-                componentPropertyKey,
+                propertyKey,
                 event,
                 querySelector,
                 predicate

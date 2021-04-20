@@ -15,8 +15,11 @@ export const Inject = (providerClass: IClass): ParameterDecorator =>
     (target: IClass, propertyKey: string | symbol, parameterIndex: number) =>
         Metadata.setInjectedProviderConfig(target, providerClass, parameterIndex);
 
-export const Input = (name?: string): PropertyDecorator => (target: IObject, propertyKey: string | symbol) =>
-    Metadata.setComponentInputConfig(target, propertyKey as string, name || (propertyKey as string));
+export const Attr = (name?: string): PropertyDecorator => (target: IObject, propertyKey: string | symbol) =>
+    Metadata.setComponentAttrConfig(target, propertyKey as string, name || (propertyKey as string));
+
+export const Prop = (name?: string): PropertyDecorator => (target: IObject, propertyKey: string | symbol) =>
+    Metadata.setComponentPropConfig(target, propertyKey as string, name || (propertyKey as string));
 
 export const ViewChild = (querySelector?: string): PropertyDecorator => (
     target: IObject,

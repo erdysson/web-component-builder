@@ -1,11 +1,11 @@
 import {IClass, IModuleConfig} from './interfaces';
 import {Metadata} from './metadata';
 import {
+    IAttrMetadataConfig,
     IInjectMetadataConfig,
-    IInputMetadataConfig,
+    TAttrMetadata,
     TComponentInstance,
     TEventListenerMetadata,
-    TInputMetadata,
     TViewChildrenMetadata,
     TWcInjectMetadata
 } from './metadata-interfaces';
@@ -47,13 +47,13 @@ export class Runtime {
             this.initProvider(injectMetadataConfig.providerClass);
         });
         const constructorParams = this.getHostClassConstructorParams(injectMetadata);
-        const inputConfigForComponent = Metadata.getComponentInputConfig(componentClass);
+        const attrConfigForComponent = Metadata.getComponentAttrConfig(componentClass);
         const viewChildrenConfigForComponent = Metadata.getViewChildrenConfig(componentClass);
         const eventListenerConfigForComponent = Metadata.getEventListenerConfig(componentClass);
         const componentFactory = this.getComponentFactory(
             componentClass,
             constructorParams,
-            inputConfigForComponent,
+            attrConfigForComponent,
             viewChildrenConfigForComponent,
             eventListenerConfigForComponent,
             template
@@ -88,7 +88,7 @@ export class Runtime {
     getComponentFactory(
         componentClass: IClass,
         componentClassConstructorParams: unknown[],
-        componentInputs: TInputMetadata,
+        componentAttrs: TAttrMetadata,
         componentViewChildren: TViewChildrenMetadata,
         componentEventListeners: TEventListenerMetadata,
         componentTemplate: string
@@ -130,11 +130,11 @@ export class Runtime {
             }
 
             static get observedAttributes() {
-                return componentInputs.map((input: IInputMetadataConfig) => input.inputAttributeName);
+                return componentAttrs.map((attr: IAttrMetadataConfig) => attr.name);
             }
 
             private updateInstanceFields(propertyKey: string, newValue: unknown): void {
-                // bind input values to the component instance
+                // bind attr values to the component instance
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore
                 this._componentInstance[propertyKey] = newValue;
@@ -151,7 +151,7 @@ export class Runtime {
                     }
                     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                     // @ts-ignore
-                    this._componentInstance[config.componentPropertyKey] = (() => {
+                    this._componentInstance[config.propertyKey] = (() => {
                         switch (results.length) {
                             case 0:
                                 return null;
@@ -174,7 +174,7 @@ export class Runtime {
                         el.addEventListener(config.event, (event: Event) => {
                             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                             // @ts-ignore
-                            this._componentInstance[config.componentPropertyKey](event, el);
+                            this._componentInstance[config.propertyKey](event, el);
                         });
                     });
                 });
@@ -188,17 +188,19 @@ export class Runtime {
 
             attributeChangedCallback(name: string, oldValue: string, newValue: string) {
                 // find the mapped config for changed attr
-                const inputConfigForChange = componentInputs.find(
-                    ({inputAttributeName}) => inputAttributeName === name
-                ) as IInputMetadataConfig;
+                const attrConfigForChange = componentAttrs.find(
+                    (config: IAttrMetadataConfig) => config.name === name
+                ) as IAttrMetadataConfig;
                 // map the class property name for the reflection of attr changes
                 this.updateInstanceFields(
-                    inputConfigForChange.componentPropertyKey,
-                    RunTimeWebComponentClass.inferType(newValue, inputConfigForChange.typeConstructor)
+                    attrConfigForChange.propertyKey,
+                    RunTimeWebComponentClass.inferType(newValue, attrConfigForChange.typeConstructor)
                 );
                 if (this._initialized) {
-                    // call the onChanges on instance only after initialization & if exists
-                    this._componentInstance.onChanges?.bind(this._componentInstance)({[name]: {oldValue, newValue}});
+                    // call the onAttrChanges on instance only after initialization & if exists
+                    this._componentInstance.onAttrChanges?.bind(this._componentInstance)({
+                        [name]: {oldValue, newValue}
+                    });
                 }
             }
 
