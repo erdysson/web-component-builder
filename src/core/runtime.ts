@@ -1,3 +1,4 @@
+import {TCustomElementEventData, TCustomElementLifecycleEvent} from './custom-element-interfaces';
 import {IClass, IModuleConfig} from './interfaces';
 import {Metadata} from './metadata';
 import {
@@ -9,17 +10,34 @@ import {
     TViewChildrenMetadata,
     TWcInjectMetadata
 } from './metadata-interfaces';
+import {RuntimeClass} from './runtime-decorators';
+import {WebComponentClass} from './web-component-class';
 
 export class Runtime {
     private readonly providerInstanceMap: WeakMap<IClass, unknown> = new WeakMap<IClass, unknown>();
+
+    private readonly componentInstanceMap: Map<symbol, TComponentInstance> = new Map<symbol, TComponentInstance>();
 
     private moduleConfig!: IModuleConfig;
 
     initModule(moduleClass: IClass): void {
         this.moduleConfig = Metadata.getModuleConfig(moduleClass);
         const {components} = this.moduleConfig;
+        window.addEventListener('construct', (e: Event) => {
+            console.log('construct event called', e);
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            const identifier: symbol = e.detail.identifier;
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            const Ctor: IClass = e.detail.data.ctor;
+            console.log('descriptor', identifier.description);
+            this.createComponentInstance(Ctor, identifier);
+        });
         // init components
-        components.forEach((componentClass: IClass) => this.initComponent(componentClass));
+        components.forEach((componentClass: IClass) => {
+            this.initComponent(componentClass);
+        });
     }
 
     initProvider(providerClass: IClass): void {
@@ -41,25 +59,29 @@ export class Runtime {
 
     initComponent(componentClass: IClass): void {
         const {selector, template} = Metadata.getComponentConfig(componentClass);
-        const injectMetadata = Metadata.getInjectedProviderConfig(componentClass);
+        // const injectMetadata = Metadata.getInjectedProviderConfig(componentClass);
         // init providers that are used in component(s)
-        injectMetadata.forEach((injectMetadataConfig: IInjectMetadataConfig) => {
-            this.initProvider(injectMetadataConfig.providerClass);
-        });
-        const constructorParams = this.getHostClassConstructorParams(injectMetadata);
+        // injectMetadata.forEach((injectMetadataConfig: IInjectMetadataConfig) => {
+        //     this.initProvider(injectMetadataConfig.providerClass);
+        // });
+        // const constructorParams = this.getHostClassConstructorParams(injectMetadata);
         const attrConfigForComponent = Metadata.getComponentAttrConfig(componentClass);
-        const viewChildrenConfigForComponent = Metadata.getViewChildrenConfig(componentClass);
-        const eventListenerConfigForComponent = Metadata.getEventListenerConfig(componentClass);
-        const componentFactory = this.getComponentFactory(
-            componentClass,
-            constructorParams,
-            attrConfigForComponent,
-            viewChildrenConfigForComponent,
-            eventListenerConfigForComponent,
-            template
-        );
+        const propsConfigForComponent = Metadata.getComponentPropConfig(componentClass);
+        // const viewChildrenConfigForComponent = Metadata.getViewChildrenConfig(componentClass);
+        // const eventListenerConfigForComponent = Metadata.getEventListenerConfig(componentClass);
+        // const componentFactory = this.getComponentFactory(
+        //     componentClass,
+        //     constructorParams,
+        //     attrConfigForComponent,
+        //     viewChildrenConfigForComponent,
+        //     eventListenerConfigForComponent,
+        //     template
+        // );
+        const attrs = attrConfigForComponent.map((c) => c.name);
+        const props = propsConfigForComponent.map((c) => c.name);
+        const rtClass = this.getRuntimeClass(componentClass, attrs, props);
         // register web component element
-        customElements.define(selector, componentFactory);
+        customElements.define(selector, rtClass);
     }
 
     createProviderInstance(providerClass: IClass): void {
@@ -74,6 +96,24 @@ export class Runtime {
         // @ts-ignore
         const providerInstance: unknown = new providerClass(...constructorParams);
         this.providerInstanceMap.set(providerClass, providerInstance);
+    }
+
+    createComponentInstance(componentClass: IClass, identifier: symbol): void {
+        const injectMetadata = Metadata.getInjectedProviderConfig(componentClass);
+        // init providers that are used in component(s)
+        injectMetadata.forEach((injectMetadataConfig: IInjectMetadataConfig) => {
+            this.initProvider(injectMetadataConfig.providerClass);
+        });
+        const constructorParams = this.getHostClassConstructorParams(injectMetadata);
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        const componentInstance: TComponentInstance = new componentClass(...constructorParams);
+        if (this.componentInstanceMap.has(identifier)) {
+            throw new Error(
+                'Can not have the same identifier for component instance request ' + identifier.valueOf().toString()
+            );
+        }
+        this.componentInstanceMap.set(identifier, componentInstance);
     }
 
     getHostClassConstructorParams(injectMetadata: TWcInjectMetadata): unknown[] {
@@ -209,5 +249,17 @@ export class Runtime {
                 this._componentInstance.onDestroy?.bind(this._componentInstance)();
             }
         };
+    }
+
+    getRuntimeClass(componentClass: IClass, attrs: string[], props: string[]): IClass<CustomElementConstructor> {
+        @RuntimeClass(componentClass, attrs, props)
+        class RuntimeWebComponentClass extends WebComponentClass {
+            constructor() {
+                super();
+                console.log('runtime class constructor called');
+            }
+        }
+
+        return RuntimeWebComponentClass;
     }
 }

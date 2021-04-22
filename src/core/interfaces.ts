@@ -21,6 +21,13 @@ export interface IAttrChanges {
     };
 }
 
+export interface IPropChanges {
+    [key: string]: {
+        oldValue: unknown;
+        newValue: unknown;
+    };
+}
+
 export interface IOnAttrChanges {
     onAttrChanges(changes?: IAttrChanges): void;
 }
