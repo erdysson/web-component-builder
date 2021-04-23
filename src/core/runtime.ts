@@ -1,17 +1,14 @@
-import {TCustomElementEventData, TCustomElementLifecycleEvent} from './custom-element-interfaces';
-import {IClass, IModuleConfig} from './interfaces';
+import {ICustomElement, ICustomElementEventDetail, TCustomElementLifecycleEventType} from './custom-element-interfaces';
+import {IAttrChanges, IClass, IModuleConfig, IPropChanges} from './interfaces';
 import {Metadata} from './metadata';
 import {
-    IAttrMetadataConfig,
-    IInjectMetadataConfig,
-    TAttrMetadata,
-    TComponentInstance,
-    TEventListenerMetadata,
-    TViewChildrenMetadata,
-    TWcInjectMetadata
+    IAttrMetadata,
+    IEventListenerMetadata,
+    IInjectMetadata,
+    IPropMetadata,
+    IViewChildMetadata,
+    TComponentInstance
 } from './metadata-interfaces';
-import {RuntimeClass} from './runtime-decorators';
-import {WebComponentClass} from './web-component-class';
 
 export class Runtime {
     private readonly providerInstanceMap: WeakMap<IClass, unknown> = new WeakMap<IClass, unknown>();
@@ -20,75 +17,77 @@ export class Runtime {
 
     private moduleConfig!: IModuleConfig;
 
-    initModule(moduleClass: IClass): void {
-        this.moduleConfig = Metadata.getModuleConfig(moduleClass);
-        const {components} = this.moduleConfig;
-        window.addEventListener('construct', (e: Event) => {
-            console.log('construct event called', e);
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            const identifier: symbol = e.detail.identifier;
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            const Ctor: IClass = e.detail.data.ctor;
-            console.log('descriptor', identifier.description);
-            this.createComponentInstance(Ctor, identifier);
-        });
-        // init components
-        components.forEach((componentClass: IClass) => {
-            this.initComponent(componentClass);
+    listenComponentLifecycleEvents(): void {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        window.addEventListener('wc:lifecycle-event', (wcEvent: CustomEvent<ICustomElementEventDetail<unknown>>) => {
+            const {cId, type, data} = wcEvent.detail;
+            let componentInstance: TComponentInstance;
+
+            switch (type) {
+                case 'construct':
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-ignore
+                    this.createComponentInstance(data.componentClass, cId);
+                    break;
+                case 'attributeChanged':
+                    componentInstance = this.componentInstanceMap.get(cId) as TComponentInstance;
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-ignore
+                    componentInstance[(data as IAttrChanges).name] = (data as IAttrChanges).newValue;
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-ignore
+                    componentInstance.onAttrChanges?.bind(componentInstance)(data as IAttrChanges);
+                    break;
+                case 'connected':
+                    componentInstance = this.componentInstanceMap.get(cId) as TComponentInstance;
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-ignore
+                    componentInstance.onInit?.bind(componentInstance)();
+                    break;
+                case 'propertyChanged':
+                    // eslint-disable-next-line no-case-declarations
+                    componentInstance = this.componentInstanceMap.get(cId) as TComponentInstance;
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-ignore
+                    componentInstance[(data as IPropChanges).name] = (data as IPropChanges).newValue;
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-ignore
+                    componentInstance.onPropChanges?.bind(componentInstance)(data as IPropChanges);
+                    break;
+                case 'disconnected':
+                    console.log('cid', cId);
+                    componentInstance = this.componentInstanceMap.get(cId) as TComponentInstance;
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-ignore
+                    componentInstance.onDestroy?.bind(componentInstance)();
+                    // remove the instance from map
+                    this.componentInstanceMap.delete(cId);
+                    break;
+            }
         });
     }
 
-    initProvider(providerClass: IClass): void {
+    initModule(moduleClass: IClass): void {
+        this.moduleConfig = Metadata.getModuleConfig(moduleClass);
+        const {components} = this.moduleConfig;
+        this.listenComponentLifecycleEvents();
+        this.registerRuntimeWebComponents(components);
+    }
+
+    createProviderInstance(providerClass: IClass): void {
+        if (this.providerInstanceMap.has(providerClass)) {
+            return;
+        }
         const {providers} = this.moduleConfig;
-        const providerConfig = Metadata.getProviderConfig(providerClass);
         // validate and make sure that class is registered in the module
         if (!providers.includes(providerClass)) {
             throw Error('Injected provider is not registered in the module');
         }
-        // validate and make sure that class is decorated with @Injectable()
-        if (!providerConfig) {
-            throw Error('Injected provider is not decorated with @Injectable().');
-        }
-        // create instance only if does not exist
-        if (!this.providerInstanceMap.has(providerClass)) {
-            this.createProviderInstance(providerClass);
-        }
-    }
-
-    initComponent(componentClass: IClass): void {
-        const {selector, template} = Metadata.getComponentConfig(componentClass);
-        // const injectMetadata = Metadata.getInjectedProviderConfig(componentClass);
-        // init providers that are used in component(s)
-        // injectMetadata.forEach((injectMetadataConfig: IInjectMetadataConfig) => {
-        //     this.initProvider(injectMetadataConfig.providerClass);
-        // });
-        // const constructorParams = this.getHostClassConstructorParams(injectMetadata);
-        const attrConfigForComponent = Metadata.getComponentAttrConfig(componentClass);
-        const propsConfigForComponent = Metadata.getComponentPropConfig(componentClass);
-        // const viewChildrenConfigForComponent = Metadata.getViewChildrenConfig(componentClass);
-        // const eventListenerConfigForComponent = Metadata.getEventListenerConfig(componentClass);
-        // const componentFactory = this.getComponentFactory(
-        //     componentClass,
-        //     constructorParams,
-        //     attrConfigForComponent,
-        //     viewChildrenConfigForComponent,
-        //     eventListenerConfigForComponent,
-        //     template
-        // );
-        const attrs = attrConfigForComponent.map((c) => c.name);
-        const props = propsConfigForComponent.map((c) => c.name);
-        const rtClass = this.getRuntimeClass(componentClass, attrs, props);
-        // register web component element
-        customElements.define(selector, rtClass);
-    }
-
-    createProviderInstance(providerClass: IClass): void {
-        const injectMetadata = Metadata.getInjectedProviderConfig(providerClass);
+        const injectMetadata: IInjectMetadata[] = Metadata.getInjectedProviderConfig(providerClass);
         // create dependency instances first
-        injectMetadata.forEach((injectConfig: IInjectMetadataConfig) => {
-            this.initProvider(injectConfig.providerClass);
+        injectMetadata.forEach((injectConfig: IInjectMetadata) => {
+            this.createProviderInstance(injectConfig.providerClass);
         });
         // all dependencies are initiated, now create the wrapping provider with injected params
         const constructorParams = this.getHostClassConstructorParams(injectMetadata);
@@ -96,41 +95,51 @@ export class Runtime {
         // @ts-ignore
         const providerInstance: unknown = new providerClass(...constructorParams);
         this.providerInstanceMap.set(providerClass, providerInstance);
+        console.log('created instance for', providerClass.name, providerInstance);
+    }
+
+    registerRuntimeWebComponents(components: IClass[]): void {
+        components.forEach((componentClass: IClass) => {
+            const attrs = Metadata.getComponentAttrConfig(componentClass);
+            const props = Metadata.getComponentPropConfig(componentClass);
+            const {selector, template} = Metadata.getComponentConfig(componentClass);
+            customElements.define(selector, this.getRuntimeClass(componentClass, attrs, props, template));
+        });
     }
 
     createComponentInstance(componentClass: IClass, identifier: symbol): void {
-        const injectMetadata = Metadata.getInjectedProviderConfig(componentClass);
-        // init providers that are used in component(s)
-        injectMetadata.forEach((injectMetadataConfig: IInjectMetadataConfig) => {
-            this.initProvider(injectMetadataConfig.providerClass);
-        });
-        const constructorParams = this.getHostClassConstructorParams(injectMetadata);
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        const componentInstance: TComponentInstance = new componentClass(...constructorParams);
         if (this.componentInstanceMap.has(identifier)) {
             throw new Error(
                 'Can not have the same identifier for component instance request ' + identifier.valueOf().toString()
             );
         }
+        const injectMetadata = Metadata.getInjectedProviderConfig(componentClass);
+        // init providers that are used in component(s)
+        injectMetadata.forEach((injectMetadataConfig: IInjectMetadata) => {
+            this.createProviderInstance(injectMetadataConfig.providerClass);
+        });
+        const constructorParams = this.getHostClassConstructorParams(injectMetadata);
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        const componentInstance: TComponentInstance = new componentClass(...constructorParams);
         this.componentInstanceMap.set(identifier, componentInstance);
     }
 
-    getHostClassConstructorParams(injectMetadata: TWcInjectMetadata): unknown[] {
+    getHostClassConstructorParams(injectMetadata: IInjectMetadata[]): unknown[] {
         return injectMetadata
             .sort(
-                (config1: IInjectMetadataConfig, config2: IInjectMetadataConfig) =>
+                (config1: IInjectMetadata, config2: IInjectMetadata) =>
                     config1.targetParameterIndex - config2.targetParameterIndex
             )
-            .map((config: IInjectMetadataConfig) => this.providerInstanceMap.get(config.providerClass));
+            .map((config: IInjectMetadata) => this.providerInstanceMap.get(config.providerClass));
     }
 
     getComponentFactory(
         componentClass: IClass,
         componentClassConstructorParams: unknown[],
-        componentAttrs: TAttrMetadata,
-        componentViewChildren: TViewChildrenMetadata,
-        componentEventListeners: TEventListenerMetadata,
+        componentAttrs: IAttrMetadata,
+        componentViewChildren: IViewChildMetadata[],
+        componentEventListeners: IEventListenerMetadata[],
         componentTemplate: string
     ): IClass<CustomElementConstructor> {
         return class RunTimeWebComponentClass extends HTMLElement {
@@ -170,7 +179,7 @@ export class Runtime {
             }
 
             static get observedAttributes() {
-                return componentAttrs.map((attr: IAttrMetadataConfig) => attr.name);
+                return Object.keys(componentAttrs);
             }
 
             private updateInstanceFields(propertyKey: string, newValue: unknown): void {
@@ -228,9 +237,7 @@ export class Runtime {
 
             attributeChangedCallback(name: string, oldValue: string, newValue: string) {
                 // find the mapped config for changed attr
-                const attrConfigForChange = componentAttrs.find(
-                    (config: IAttrMetadataConfig) => config.name === name
-                ) as IAttrMetadataConfig;
+                const attrConfigForChange = componentAttrs[name];
                 // map the class property name for the reflection of attr changes
                 this.updateInstanceFields(
                     attrConfigForChange.propertyKey,
@@ -239,7 +246,9 @@ export class Runtime {
                 if (this._initialized) {
                     // call the onAttrChanges on instance only after initialization & if exists
                     this._componentInstance.onAttrChanges?.bind(this._componentInstance)({
-                        [name]: {oldValue, newValue}
+                        name,
+                        oldValue,
+                        newValue
                     });
                 }
             }
@@ -251,15 +260,81 @@ export class Runtime {
         };
     }
 
-    getRuntimeClass(componentClass: IClass, attrs: string[], props: string[]): IClass<CustomElementConstructor> {
-        @RuntimeClass(componentClass, attrs, props)
-        class RuntimeWebComponentClass extends WebComponentClass {
+    getRuntimeClass(
+        componentClass: IClass,
+        attrs: IAttrMetadata,
+        props: IPropMetadata,
+        template: string
+    ): IClass<CustomElementConstructor> {
+        class WebComponentClass extends HTMLElement implements ICustomElement {
+            static get observedAttributes(): string[] {
+                return Object.keys(attrs);
+            }
+
+            private readonly cId = Symbol('wc:id');
+
             constructor() {
                 super();
-                console.log('runtime class constructor called');
+                this.dispatchLifecycleEvent('construct', {componentClass});
+                setTimeout(() => this.insertAdjacentHTML('beforeend', template));
+            }
+
+            attributeChangedCallback(name: string, oldValue: string, newValue: string): void {
+                console.log('wcc:attributeChanged', name, oldValue, newValue);
+                this.dispatchLifecycleEvent<IAttrChanges>('propertyChanged', {
+                    name,
+                    oldValue,
+                    newValue
+                });
+            }
+
+            propertyChangedCallback(name: string, oldValue: unknown, newValue: unknown): void {
+                console.log('wcc:propertyChanged', name, oldValue, newValue);
+                this.dispatchLifecycleEvent<IPropChanges>('propertyChanged', {
+                    name,
+                    oldValue,
+                    newValue
+                });
+            }
+
+            connectedCallback(): void {
+                console.log('wcc:connected');
+                this.dispatchLifecycleEvent('connected', {});
+            }
+
+            disconnectedCallback(): void {
+                console.log('wcc:disconnected');
+                this.dispatchLifecycleEvent('disconnected', {});
+            }
+
+            dispatchLifecycleEvent<K>(eventType: TCustomElementLifecycleEventType, data: K): void {
+                window.dispatchEvent(
+                    new CustomEvent<ICustomElementEventDetail<K>>('wc:lifecycle-event', {
+                        detail: {
+                            type: eventType,
+                            cId: this.cId,
+                            data
+                        }
+                    })
+                );
             }
         }
+        // add properties with setter
+        Object.keys(props).forEach((prop) => {
+            Object.defineProperty(WebComponentClass.prototype, prop, {
+                set(newValue: unknown) {
+                    const oldValue = this.value;
+                    // call lc method
+                    this.propertyChangedCallback(prop, oldValue, newValue);
+                    // then update the value
+                    this.value = newValue;
+                },
+                get() {
+                    return this.value;
+                }
+            });
+        });
 
-        return RuntimeWebComponentClass;
+        return WebComponentClass;
     }
 }

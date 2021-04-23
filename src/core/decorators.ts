@@ -7,8 +7,6 @@ export const Module = (config: IModuleConfig): ClassDecorator => (target: IClass
 export const Component = (config: IComponentConfig): ClassDecorator => (target: IClass) =>
     Metadata.setComponentConfig(target, config);
 
-export const Injectable = (): ClassDecorator => (target: IClass) => Metadata.setProviderConfig(target, true);
-
 export const Inject = (providerClass: IClass): ParameterDecorator =>
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore

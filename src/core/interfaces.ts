@@ -15,21 +15,23 @@ export interface IComponentConfig {
 }
 
 export interface IAttrChanges {
-    [key: string]: {
-        oldValue: string | null;
-        newValue: string | null;
-    };
+    name: string;
+    oldValue: string | null;
+    newValue: string | null;
 }
 
 export interface IPropChanges {
-    [key: string]: {
-        oldValue: unknown;
-        newValue: unknown;
-    };
+    name: string;
+    oldValue: unknown;
+    newValue: unknown;
 }
 
 export interface IOnAttrChanges {
     onAttrChanges(changes?: IAttrChanges): void;
+}
+
+export interface IOnPropChanges {
+    onAttrChanges(changes?: IPropChanges): void;
 }
 
 export interface IOnInit {

@@ -1,12 +1,11 @@
 import 'reflect-metadata';
 import {IClass, IComponentConfig, IModuleConfig, IObject} from './interfaces';
 import {
-    IInjectMetadataConfig,
-    TAttrMetadata,
-    TEventListenerMetadata,
-    TPropMetadata,
-    TViewChildrenMetadata,
-    TWcInjectMetadata
+    IAttrMetadata,
+    IEventListenerMetadata,
+    IInjectMetadata,
+    IPropMetadata,
+    IViewChildMetadata
 } from './metadata-interfaces';
 import {METADATA_KEYS} from './metadata-keys';
 
@@ -27,21 +26,13 @@ export class Metadata {
         return Reflect.getMetadata(METADATA_KEYS.COMPONENT, componentClass) as IComponentConfig;
     }
 
-    static setProviderConfig(providerClass: IClass, config: unknown): void {
-        Reflect.defineMetadata(METADATA_KEYS.PROVIDER, config, providerClass);
-    }
-
-    static getProviderConfig(providerClass: IClass): unknown {
-        return Reflect.getMetadata(METADATA_KEYS.PROVIDER, providerClass);
-    }
-
     static setInjectedProviderConfig(hostClass: IClass, providerClass: IClass, targetParameterIndex: number): void {
         const hasMetadata = Reflect.hasMetadata(METADATA_KEYS.INJECT, hostClass);
 
         if (!hasMetadata) {
             Reflect.defineMetadata(
                 METADATA_KEYS.INJECT,
-                [{providerClass, targetParameterIndex}] as IInjectMetadataConfig[],
+                [{providerClass, targetParameterIndex}] as IInjectMetadata[],
                 hostClass
             );
         } else {
@@ -53,8 +44,8 @@ export class Metadata {
         }
     }
 
-    static getInjectedProviderConfig(hostClass: IClass): TWcInjectMetadata {
-        return (Reflect.getMetadata(METADATA_KEYS.INJECT, hostClass) || []) as TWcInjectMetadata;
+    static getInjectedProviderConfig(hostClass: IClass): IInjectMetadata[] {
+        return Reflect.getMetadata(METADATA_KEYS.INJECT, hostClass) || [];
     }
 
     static setComponentAttrConfig(componentInstance: IObject, propertyKey: string, name: string): void {
@@ -65,37 +56,51 @@ export class Metadata {
         if (!hasMetadata) {
             Reflect.defineMetadata(
                 METADATA_KEYS.ATTR,
-                [{propertyKey, name, typeConstructor}] as TAttrMetadata,
+                {
+                    [name]: {
+                        propertyKey,
+                        typeConstructor
+                    }
+                } as IAttrMetadata,
                 componentClass
             );
         } else {
-            const attrMetadata = Metadata.getComponentAttrConfig(componentClass);
-            attrMetadata.push({
+            const attrMetadata: IAttrMetadata = Metadata.getComponentAttrConfig(componentClass);
+            attrMetadata[name] = {
                 propertyKey,
-                name,
                 typeConstructor
-            });
+            };
         }
     }
 
-    static getComponentAttrConfig(componentClass: IClass): TAttrMetadata {
-        return Reflect.getMetadata(METADATA_KEYS.ATTR, componentClass) || [];
+    static getComponentAttrConfig(componentClass: IClass): IAttrMetadata {
+        return Reflect.getMetadata(METADATA_KEYS.ATTR, componentClass) || {};
     }
 
     static setComponentPropConfig(componentInstance: IObject, propertyKey: string, name: string): void {
         const componentClass: IClass = componentInstance.constructor;
-        const hasMetadata = Reflect.hasMetadata(METADATA_KEYS.PROP, componentClass);
+        const hasMetadata: boolean = Reflect.hasMetadata(METADATA_KEYS.PROP, componentClass);
 
         if (!hasMetadata) {
-            Reflect.defineMetadata(METADATA_KEYS.PROP, [{propertyKey, name}] as TPropMetadata, componentClass);
+            Reflect.defineMetadata(
+                METADATA_KEYS.PROP,
+                {
+                    [name]: {
+                        propertyKey
+                    }
+                } as IPropMetadata,
+                componentClass
+            );
         } else {
-            const propMetadata = Metadata.getComponentPropConfig(componentClass);
-            propMetadata.push({propertyKey, name});
+            const propMetadata: IPropMetadata = Metadata.getComponentPropConfig(componentClass);
+            propMetadata[name] = {
+                propertyKey
+            };
         }
     }
 
-    static getComponentPropConfig(componentClass: IClass): TPropMetadata {
-        return Reflect.getMetadata(METADATA_KEYS.PROP, componentClass) || [];
+    static getComponentPropConfig(componentClass: IClass): IPropMetadata {
+        return Reflect.getMetadata(METADATA_KEYS.PROP, componentClass) || {};
     }
 
     static setViewChildrenConfig(componentInstance: IObject, propertyKey: string, querySelector?: string): void {
@@ -105,7 +110,7 @@ export class Metadata {
         if (!hasMetadata) {
             Reflect.defineMetadata(
                 METADATA_KEYS.VIEW_CHILD,
-                [{propertyKey, querySelector}] as TViewChildrenMetadata,
+                [{propertyKey, querySelector}] as IViewChildMetadata[],
                 componentClass
             );
         } else {
@@ -117,7 +122,7 @@ export class Metadata {
         }
     }
 
-    static getViewChildrenConfig(componentClass: IClass): TViewChildrenMetadata {
+    static getViewChildrenConfig(componentClass: IClass): IViewChildMetadata[] {
         return Reflect.getMetadata(METADATA_KEYS.VIEW_CHILD, componentClass) || [];
     }
 
@@ -134,7 +139,7 @@ export class Metadata {
         if (!hasMetadata) {
             Reflect.defineMetadata(
                 METADATA_KEYS.EVENT_LISTENER,
-                [{propertyKey, event, querySelector, predicate}] as TEventListenerMetadata,
+                [{propertyKey, event, querySelector, predicate}] as IEventListenerMetadata[],
                 componentClass
             );
         } else {
@@ -148,7 +153,7 @@ export class Metadata {
         }
     }
 
-    static getEventListenerConfig(componentClass: IClass): TEventListenerMetadata {
+    static getEventListenerConfig(componentClass: IClass): IEventListenerMetadata[] {
         return Reflect.getMetadata(METADATA_KEYS.EVENT_LISTENER, componentClass) || [];
     }
 

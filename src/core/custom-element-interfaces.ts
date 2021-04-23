@@ -6,10 +6,15 @@ export interface ICustomElement {
     disconnectedCallback?(): void;
 }
 
-// eslint-disable-next-line @typescript-eslint/ban-types
-export type TCustomElementEventData<T = {}> = Record<symbol, CustomEventInit<T>>;
+export interface ICustomElementEventDetail<K> {
+    type: TCustomElementLifecycleEventType;
+    cId: symbol;
+    data: K;
+}
 
-export type TCustomElementLifecycleEvent =
+export type TCustomElementLifecycle = 'wc:lifecycle-event';
+
+export type TCustomElementLifecycleEventType =
     | 'construct'
     | 'connected'
     | 'attributeChanged'
