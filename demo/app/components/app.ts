@@ -1,5 +1,7 @@
-import {IOnInit} from 'web-component-builder';
-import {Attr, Component, Listen, ViewChild} from 'web-component-builder';
+import {Attr, Component, Inject, IOnInit, Listen, Prop, ViewChild} from 'web-component-builder';
+
+import {AppService} from '../services/app.service';
+import {App2Service} from '../services/app2.service';
 
 @Component({
     selector: 'app-main',
@@ -24,8 +26,16 @@ export class App implements IOnInit {
     @Attr()
     notExist!: string | null;
 
+    @Prop()
+    list!: string[];
+
     @ViewChild('app-test')
     appTest!: HTMLElement;
+
+    constructor(
+        @Inject(App2Service) private readonly app2: App2Service,
+        @Inject(AppService) private readonly app: AppService
+    ) {}
 
     @Listen('click')
     onClick(event: MouseEvent): void {
@@ -35,6 +45,8 @@ export class App implements IOnInit {
 
     onInit(): void {
         console.log('app-main on init', this);
+        this.app.appTest();
+        this.app2.app2Log();
     }
 
     private logThis(): void {
