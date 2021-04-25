@@ -1,4 +1,4 @@
-import {Attr, Component, Inject, IOnInit, Listen, Prop, ViewChild} from 'web-component-builder';
+import {Attr, Component, IOnInit, Listen, Prop, ViewChild} from 'web-component-builder';
 
 import {AppService} from '../services/app.service';
 import {App2Service} from '../services/app2.service';
@@ -32,10 +32,7 @@ export class App implements IOnInit {
     @ViewChild('app-test')
     appTest!: HTMLElement;
 
-    constructor(
-        @Inject(App2Service) private readonly app2: App2Service,
-        @Inject(AppService) private readonly app: AppService
-    ) {}
+    constructor(private readonly app2: App2Service, private readonly app: AppService) {}
 
     @Listen('click')
     onClick(event: MouseEvent): void {

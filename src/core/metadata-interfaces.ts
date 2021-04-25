@@ -1,15 +1,11 @@
-import {IClass, IObject, IOnAttrChanges, IOnDestroy, IOnInit, IOnPropChanges, IOnViewInit} from './interfaces';
+import {IOnAttrChanges, IOnDestroy, IOnInit, IOnPropChanges, IOnViewInit} from './interfaces';
 
-export interface IInjectMetadata {
-    providerClass: IClass;
-    targetParameterIndex: number;
-}
+export type PrimitiveTypeConstructor = BooleanConstructor | NumberConstructor;
 
 export interface IAttrMetadata {
     [name: string]: {
         propertyKey: string;
-        // eslint-disable-next-line @typescript-eslint/ban-types
-        typeConstructor: Function;
+        typeConstructor: PrimitiveTypeConstructor;
     };
 }
 
@@ -31,6 +27,4 @@ export interface IEventListenerMetadata {
     predicate: () => boolean;
 }
 
-export type TComponentInstance = Partial<
-    IOnAttrChanges & IOnInit & IOnViewInit & IOnPropChanges & IOnDestroy & IObject
->;
+export type TComponentInstance = Partial<IOnAttrChanges & IOnInit & IOnViewInit & IOnPropChanges & IOnDestroy>;

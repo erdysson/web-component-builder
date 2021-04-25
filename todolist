@@ -26,3 +26,9 @@ improvements :
 options :
 1 - have class only with constructor call, and enhance in decorator
 2 - dispatch event on lc method call and connect it with created instance
+
+
+
+1 - write own decorator types so that full type checking enabled
+2 - remove constructor params for DI and assign them to properties
+3 - remove injectable decorators

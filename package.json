@@ -48,7 +48,8 @@
     "fix:lint": "npm run lint -- --fix",
     "fix": "run-s fix:*",
     "tsc:build": "tsc -p src/tsconfig.json",
-    "rollup:bundle": "rollup -c rollup.config.js",
+    "tsc:build:watch": "tsc -p src/tsconfig.json -w",
+    "rollup:bundle": "rollup -c rollup.config.js -w",
     "lib:test": "karma start",
     "lib:build": "npm run tsc:build && npm run rollup:bundle",
     "lib:build:watch": "npm run tsc:build && npm run rollup:bundle -- -w"

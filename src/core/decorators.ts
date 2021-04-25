@@ -1,30 +1,33 @@
-import {IClass, IComponentConfig, IModuleConfig, IObject} from './interfaces';
+import {
+    Class,
+    IClassDecorator,
+    IComponentConfig,
+    IMethodDecorator,
+    IModuleConfig,
+    IPropertyDecorator
+} from './interfaces';
 import {Metadata} from './metadata';
 
-export const Module = (config: IModuleConfig): ClassDecorator => (target: IClass) =>
+export const Module = (config: IModuleConfig): IClassDecorator => (target: Class) =>
     Metadata.setModuleConfig(target, config);
 
-export const Component = (config: IComponentConfig): ClassDecorator => (target: IClass) =>
+export const Component = (config: IComponentConfig): IClassDecorator => (target: Class) => {
     Metadata.setComponentConfig(target, config);
+};
 
-export const Inject = (providerClass: IClass): ParameterDecorator =>
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    (target: IClass, propertyKey: string | symbol, parameterIndex: number) =>
-        Metadata.setInjectedProviderConfig(target, providerClass, parameterIndex);
+// eslint-disable-next-line @typescript-eslint/no-empty-function
+export const Injectable = (): IClassDecorator => (target: Class) => {};
 
-export const Attr = (name?: string): PropertyDecorator => (target: IObject, propertyKey: string | symbol) =>
-    Metadata.setComponentAttrConfig(target, propertyKey as string, name || (propertyKey as string));
+export const Attr = (name?: string): IPropertyDecorator => (target: any, propertyKey: string) =>
+    Metadata.setComponentAttrConfig(target, propertyKey, name || propertyKey);
 
-export const Prop = (name?: string): PropertyDecorator => (target: IObject, propertyKey: string | symbol) =>
-    Metadata.setComponentPropConfig(target, propertyKey as string, name || (propertyKey as string));
+export const Prop = (name?: string): IPropertyDecorator => (target: any, propertyKey: string) =>
+    Metadata.setComponentPropConfig(target, propertyKey, name || propertyKey);
 
-export const ViewChild = (querySelector?: string): PropertyDecorator => (
-    target: IObject,
-    propertyKey: string | symbol
-) => Metadata.setViewChildrenConfig(target, propertyKey as string, querySelector);
+export const ViewChild = (querySelector?: string): IPropertyDecorator => (target: any, propertyKey: string) =>
+    Metadata.setViewChildrenConfig(target, propertyKey as string, querySelector);
 
-export const Listen = (event: string, querySelector = '', predicate: () => boolean = () => true): MethodDecorator => (
-    target: IObject,
-    propertyKey: string | symbol
+export const Listen = (event: string, querySelector = '', predicate: () => boolean = () => true): IMethodDecorator => (
+    target: any,
+    propertyKey: string
 ) => Metadata.setEventListenerConfig(target, propertyKey as string, event, querySelector, predicate);

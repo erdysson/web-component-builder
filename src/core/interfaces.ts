@@ -1,12 +1,24 @@
-// eslint-disable-next-line @typescript-eslint/ban-types
-export type IClass<T = unknown> = Function & T;
+export interface Class<TClass = any> extends Function {
+    // <TParam extends Class>(...args: TParam[]): TClass;
+    // new <TParam extends Class>(...args: TParam[]): TClass;
+    new (...args: any[]): TClass;
+}
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface IObject extends Object {}
+export interface IClassDecorator {
+    (target: Class): void;
+}
+
+export interface IPropertyDecorator {
+    (target: any, propertyKey: string, descriptor?: PropertyDescriptor): void;
+}
+
+export interface IMethodDecorator {
+    (target: any, propertyKey: string, descriptor?: PropertyDescriptor): void;
+}
 
 export interface IModuleConfig {
-    components: IClass[];
-    providers: IClass[];
+    components: Class[];
+    providers: Class[];
 }
 
 export interface IComponentConfig {

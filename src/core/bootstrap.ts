@@ -1,7 +1,7 @@
-import {IClass} from './interfaces';
+import {Class} from './interfaces';
 import {Runtime} from './runtime';
 
-export const bootstrap = (moduleClass: IClass): void => {
+export const bootstrap = (moduleClass: Class): void => {
     const runtime = new Runtime();
     runtime.initModule(moduleClass);
 };
