@@ -1,7 +1,7 @@
 import {ICustomElement, ICustomElementEventDetail, TCustomElementLifecycleEventType} from './custom-element-interfaces';
 import {Class, IAttrChanges, IModuleConfig, IPropChanges} from './interfaces';
 import {Metadata} from './metadata';
-import {IAttrMetadata, IPropMetadata, IViewChildMetadata, TComponentInstance} from './metadata-interfaces';
+import {IAttrMetadata, IPropMetadata} from './metadata-interfaces';
 
 export class Runtime {
     private readonly providerInstanceMap: WeakMap<Class, any> = new WeakMap<Class, any>();
@@ -15,7 +15,7 @@ export class Runtime {
         // @ts-ignore
         window.addEventListener('wc:lifecycle-event', (wcEvent: CustomEvent<ICustomElementEventDetail<unknown>>) => {
             const {cId, type, data} = wcEvent.detail;
-            let componentInstance: TComponentInstance;
+            let componentInstance: any;
 
             switch (type) {
                 case 'construct':
@@ -24,7 +24,7 @@ export class Runtime {
                     this.createComponentInstance(data.componentClass, cId);
                     break;
                 case 'attributeChanged':
-                    componentInstance = this.componentInstanceMap.get(cId) as TComponentInstance;
+                    componentInstance = this.componentInstanceMap.get(cId);
                     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                     // @ts-ignore
                     componentInstance[(data as IAttrChanges).name] = (data as IAttrChanges).newValue;
@@ -33,14 +33,14 @@ export class Runtime {
                     componentInstance.onAttrChanges?.bind(componentInstance)(data as IAttrChanges);
                     break;
                 case 'connected':
-                    componentInstance = this.componentInstanceMap.get(cId) as TComponentInstance;
+                    componentInstance = this.componentInstanceMap.get(cId);
                     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                     // @ts-ignore
                     componentInstance.onInit?.bind(componentInstance)();
                     break;
                 case 'propertyChanged':
                     // eslint-disable-next-line no-case-declarations
-                    componentInstance = this.componentInstanceMap.get(cId) as TComponentInstance;
+                    componentInstance = this.componentInstanceMap.get(cId);
                     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                     // @ts-ignore
                     componentInstance[(data as IPropChanges).name] = (data as IPropChanges).newValue;
@@ -50,7 +50,7 @@ export class Runtime {
                     break;
                 case 'disconnected':
                     console.log('cid', cId);
-                    componentInstance = this.componentInstanceMap.get(cId) as TComponentInstance;
+                    componentInstance = this.componentInstanceMap.get(cId);
                     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                     // @ts-ignore
                     componentInstance.onDestroy?.bind(componentInstance)();

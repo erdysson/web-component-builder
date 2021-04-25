@@ -1,5 +1,3 @@
-import {IOnAttrChanges, IOnDestroy, IOnInit, IOnPropChanges, IOnViewInit} from './interfaces';
-
 export type PrimitiveTypeConstructor = BooleanConstructor | NumberConstructor;
 
 export interface IAttrMetadata {
@@ -26,5 +24,3 @@ export interface IEventListenerMetadata {
     querySelector: string;
     predicate: () => boolean;
 }
-
-export type TComponentInstance = Partial<IOnAttrChanges & IOnInit & IOnViewInit & IOnPropChanges & IOnDestroy>;
