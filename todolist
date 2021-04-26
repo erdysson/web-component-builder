@@ -1,8 +1,6 @@
 todo list
 
 0 - clear README
-1 - property decorator
-2 - event bus - or better mapping between component class and wc class
 2 - shadow option
 3 - template loader? jsx?
 4 - styling strategy
@@ -12,20 +10,3 @@ todo others
 0 - cli tool
 1 - router project
 2 - swipe project
-
-improvements :
-
-1 - don't add lc methods if corresponding ones does not exist.
-    if no onInit, then no connectedCallback
-    if no attrs, no attributeChangedCallback
-    if no props, no propsChangedCallback
-    if no onDestroy, no disconnectedCallback
-
-2 - assign properties to runtime classes and implement lc method for changes
-
-options :
-1 - have class only with constructor call, and enhance in decorator
-2 - dispatch event on lc method call and connect it with created instance
-
-
-2 - remove constructor params for DI and assign them to properties

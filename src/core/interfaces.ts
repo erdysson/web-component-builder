@@ -38,8 +38,8 @@ export interface IAttrChanges {
 
 export interface IPropChanges {
     name: string;
-    oldValue: unknown;
-    newValue: unknown;
+    oldValue: any;
+    newValue: any;
 }
 
 export interface IOnAttrChanges {
@@ -47,7 +47,7 @@ export interface IOnAttrChanges {
 }
 
 export interface IOnPropChanges {
-    onAttrChanges(changes?: IPropChanges): void;
+    onPropChanges(changes?: IPropChanges): void;
 }
 
 export interface IOnInit {

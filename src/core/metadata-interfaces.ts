@@ -15,7 +15,7 @@ export interface IPropMetadata {
 
 export interface IViewChildMetadata {
     propertyKey: string;
-    querySelector?: string;
+    querySelector: string;
 }
 
 export interface IEventListenerMetadata {

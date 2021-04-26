@@ -1,4 +1,4 @@
-export interface ICustomElement {
+export interface ICustomElement extends HTMLElement {
     observedAttributes?: string[];
     attributeChangedCallback?(name: string, oldValue: string, newValue: string): void;
     propertyChangedCallback?(name: string, oldValue: string, newValue: string): void;
@@ -6,17 +6,8 @@ export interface ICustomElement {
     disconnectedCallback?(): void;
 }
 
-export interface ICustomElementEventDetail<K> {
-    type: TCustomElementLifecycleEventType;
-    cId: symbol;
-    data: K;
+export enum CustomElementState {
+    CONSTRUCTED,
+    CONNECTED,
+    DISCONNECTED
 }
-
-export type TCustomElementLifecycle = 'wc:lifecycle-event';
-
-export type TCustomElementLifecycleEventType =
-    | 'construct'
-    | 'connected'
-    | 'attributeChanged'
-    | 'propertyChanged'
-    | 'disconnected';

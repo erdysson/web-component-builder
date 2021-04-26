@@ -4,6 +4,7 @@ export const METADATA_KEYS = {
     INJECT: Symbol('wc-metadata:inject'),
     ATTR: Symbol('wc-metadata:attr'),
     PROP: Symbol('wc-metadata:prop'),
+    VIEW_CONTAINER: Symbol('wc-metadata:view-container'),
     VIEW_CHILD: Symbol('wc-metadata:view-child'),
     EVENT_LISTENER: Symbol('wc-metadata:event-listener')
 };

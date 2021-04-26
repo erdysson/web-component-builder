@@ -81,7 +81,16 @@ export class Metadata {
         return Reflect.getMetadata(METADATA_KEYS.PROP, componentClass) || {};
     }
 
-    static setViewChildrenConfig(componentInstance: any, propertyKey: string, querySelector?: string): void {
+    static setViewContainerConfig(componentInstance: any, propertyKey: string): void {
+        const componentClass: Class = componentInstance.constructor;
+        Reflect.defineMetadata(METADATA_KEYS.VIEW_CONTAINER, propertyKey, componentClass);
+    }
+
+    static getViewContainerConfig(componentClass: Class): string {
+        return Reflect.getMetadata(METADATA_KEYS.VIEW_CONTAINER, componentClass);
+    }
+
+    static setViewChildrenConfig(componentInstance: any, propertyKey: string, querySelector: string): void {
         const componentClass: Class = componentInstance.constructor;
         const hasMetadata = Reflect.hasMetadata(METADATA_KEYS.VIEW_CHILD, componentClass);
 

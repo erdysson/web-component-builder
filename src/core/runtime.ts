@@ -1,326 +1,204 @@
-import {ICustomElement, ICustomElementEventDetail, TCustomElementLifecycleEventType} from './custom-element-interfaces';
-import {Class, IAttrChanges, IModuleConfig, IPropChanges} from './interfaces';
+import {CustomElementState, ICustomElement} from './custom-element-interfaces';
+import {Class, IModuleConfig} from './interfaces';
 import {Metadata} from './metadata';
-import {IAttrMetadata, IPropMetadata} from './metadata-interfaces';
+import {IEventListenerMetadata, IViewChildMetadata} from './metadata-interfaces';
 
 export class Runtime {
     private readonly providerInstanceMap: WeakMap<Class, any> = new WeakMap<Class, any>();
 
-    private readonly componentInstanceMap: Map<symbol, any> = new Map<symbol, any>();
-
     private moduleConfig!: IModuleConfig;
-
-    listenComponentLifecycleEvents(): void {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        window.addEventListener('wc:lifecycle-event', (wcEvent: CustomEvent<ICustomElementEventDetail<unknown>>) => {
-            const {cId, type, data} = wcEvent.detail;
-            let componentInstance: any;
-
-            switch (type) {
-                case 'construct':
-                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                    // @ts-ignore
-                    this.createComponentInstance(data.componentClass, cId);
-                    break;
-                case 'attributeChanged':
-                    componentInstance = this.componentInstanceMap.get(cId);
-                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                    // @ts-ignore
-                    componentInstance[(data as IAttrChanges).name] = (data as IAttrChanges).newValue;
-                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                    // @ts-ignore
-                    componentInstance.onAttrChanges?.bind(componentInstance)(data as IAttrChanges);
-                    break;
-                case 'connected':
-                    componentInstance = this.componentInstanceMap.get(cId);
-                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                    // @ts-ignore
-                    componentInstance.onInit?.bind(componentInstance)();
-                    break;
-                case 'propertyChanged':
-                    // eslint-disable-next-line no-case-declarations
-                    componentInstance = this.componentInstanceMap.get(cId);
-                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                    // @ts-ignore
-                    componentInstance[(data as IPropChanges).name] = (data as IPropChanges).newValue;
-                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                    // @ts-ignore
-                    componentInstance.onPropChanges?.bind(componentInstance)(data as IPropChanges);
-                    break;
-                case 'disconnected':
-                    console.log('cid', cId);
-                    componentInstance = this.componentInstanceMap.get(cId);
-                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                    // @ts-ignore
-                    componentInstance.onDestroy?.bind(componentInstance)();
-                    // remove the instance from map
-                    this.componentInstanceMap.delete(cId);
-                    break;
-            }
-        });
-    }
 
     initModule(moduleClass: Class): void {
         this.moduleConfig = Metadata.getModuleConfig(moduleClass);
         const {components} = this.moduleConfig;
-        this.listenComponentLifecycleEvents();
         this.registerRuntimeWebComponents(components);
+    }
+
+    getConstructorParamsFor(hostClass: Class): any[] {
+        const params = Metadata.getConstructorParams(hostClass);
+        // init providers that are used in component(s)
+        return params.map((providerClass: Class) => {
+            this.createProviderInstance(providerClass);
+            return this.providerInstanceMap.get(providerClass);
+        });
     }
 
     createProviderInstance(providerClass: Class): void {
         if (this.providerInstanceMap.has(providerClass)) {
             return;
         }
-        const {providers} = this.moduleConfig;
         // validate and make sure that class is registered in the module
-        if (!providers.includes(providerClass)) {
+        if (!this.moduleConfig.providers.includes(providerClass)) {
             throw Error('Injected provider is not registered in the module');
         }
-        const dependencies = Metadata.getConstructorParams(providerClass);
-        // create dependency instances first
-        dependencies.forEach((depClass: Class) => {
-            this.createProviderInstance(depClass);
-        });
         // all dependencies are initiated, now create the wrapping provider with injected params
-        const constructorParams = this.getHostClassConstructorParams(dependencies);
+        const constructorParams = this.getConstructorParamsFor(providerClass);
         const providerInstance: InstanceType<typeof providerClass> = new providerClass(...constructorParams);
         this.providerInstanceMap.set(providerClass, providerInstance);
     }
 
+    createComponentInstance(componentClass: Class): any {
+        const constructorParams = this.getConstructorParamsFor(componentClass);
+        return new componentClass(...constructorParams);
+    }
+
     registerRuntimeWebComponents(components: Class[]): void {
         components.forEach((componentClass: Class) => {
-            const attrs = Metadata.getComponentAttrConfig(componentClass);
-            const props = Metadata.getComponentPropConfig(componentClass);
-            const {selector, template} = Metadata.getComponentConfig(componentClass);
-            customElements.define(selector, this.getRuntimeClass(componentClass, attrs, props, template, this));
-        });
-    }
-
-    createComponentInstance(componentClass: Class, identifier: symbol): void {
-        if (this.componentInstanceMap.has(identifier)) {
-            throw new Error(
-                'Can not have the same identifier for component instance request ' + identifier.valueOf().toString()
+            const config = Metadata.getComponentConfig(componentClass);
+            const attrs = Object.keys(Metadata.getComponentAttrConfig(componentClass));
+            const props = Object.keys(Metadata.getComponentPropConfig(componentClass));
+            const viewContainer = Metadata.getViewContainerConfig(componentClass);
+            const viewChildren = Metadata.getViewChildrenConfig(componentClass);
+            const eventListeners = Metadata.getEventListenerConfig(componentClass);
+            const customElementClass = this.getCustomElementClass(
+                attrs,
+                props,
+                viewContainer,
+                viewChildren,
+                eventListeners,
+                config.template,
+                () => this.createComponentInstance(componentClass)
             );
-        }
-        const params = Metadata.getConstructorParams(componentClass);
-        // init providers that are used in component(s)
-        params.forEach((providerClass: Class) => {
-            this.createProviderInstance(providerClass);
+            customElements.define(config.selector, customElementClass);
         });
-        const constructorParams = this.getHostClassConstructorParams(params);
-        const componentInstance = new componentClass(...constructorParams);
-        this.componentInstanceMap.set(identifier, componentInstance);
     }
 
-    getHostClassConstructorParams(paramClasses: Class[]) {
-        return paramClasses.map(
-            (providerClass: Class) => this.providerInstanceMap.get(providerClass) as InstanceType<typeof providerClass>
-        );
-    }
-
-    // getComponentFactory(
-    //     componentClass: IClass,
-    //     componentClassConstructorParams: unknown[],
-    //     componentAttrs: IAttrMetadata,
-    //     componentViewChildren: IViewChildMetadata[],
-    //     componentEventListeners: IEventListenerMetadata[],
-    //     componentTemplate: string
-    // ): IClass<CustomElementConstructor> {
-    //     return class RunTimeWebComponentClass extends HTMLElement {
-    //         private readonly _componentInstance: TComponentInstance;
-    //
-    //         private _initialized = false;
-    //
-    //         constructor() {
-    //             super();
-    //             // create mapped component instance
-    //             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    //             // @ts-ignore
-    //             this._componentInstance = new componentClass(...componentClassConstructorParams);
-    //             // setTimeout is required because in IE11, the order of onInit() is different.
-    //             setTimeout(() => {
-    //                 // the way for it to work on IE11 and applying global styles to the components
-    //                 this.insertAdjacentHTML('beforeend', componentTemplate);
-    //                 // assign dom elements to the component properties
-    //                 this.bindDOMElements();
-    //                 // assign handlers for specified events and elements
-    //                 this.bindEventListeners();
-    //                 // call afterViewInit if exists
-    //                 this._componentInstance.onViewInit?.bind(this._componentInstance)();
-    //             });
-    //         }
-    //
-    //         // eslint-disable-next-line @typescript-eslint/ban-types
-    //         private static inferType(from: string, typeConstructor: Function): unknown {
-    //             switch (typeConstructor) {
-    //                 case Boolean:
-    //                     return Boolean(from);
-    //                 case Number:
-    //                     return Number(from);
-    //                 default:
-    //                     return from;
-    //             }
-    //         }
-    //
-    //         static get observedAttributes() {
-    //             return Object.keys(componentAttrs);
-    //         }
-    //
-    //         private updateInstanceFields(propertyKey: string, newValue: unknown): void {
-    //             // bind attr values to the component instance
-    //             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    //             // @ts-ignore
-    //             this._componentInstance[propertyKey] = newValue;
-    //         }
-    //
-    //         private bindDOMElements(): void {
-    //             componentViewChildren.forEach((config) => {
-    //                 let results;
-    //
-    //                 if (!config.querySelector) {
-    //                     results = [this];
-    //                 } else {
-    //                     results = this.querySelectorAll<HTMLElement>(config.querySelector);
-    //                 }
-    //                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    //                 // @ts-ignore
-    //                 this._componentInstance[config.propertyKey] = (() => {
-    //                     switch (results.length) {
-    //                         case 0:
-    //                             return null;
-    //                         case 1:
-    //                             return results[0];
-    //                         default:
-    //                             return results;
-    //                     }
-    //                 })();
-    //             });
-    //         }
-    //
-    //         private bindEventListeners(): void {
-    //             componentEventListeners.forEach((config) => {
-    //                 const elements = !config.querySelector
-    //                     ? [this]
-    //                     : this.querySelectorAll<HTMLElement>(config.querySelector);
-    //                 elements.forEach((el: HTMLElement) => {
-    //                     // todo : figure out removing
-    //                     el.addEventListener(config.event, (event: Event) => {
-    //                         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    //                         // @ts-ignore
-    //                         this._componentInstance[config.propertyKey](event, el);
-    //                     });
-    //                 });
-    //             });
-    //         }
-    //
-    //         connectedCallback() {
-    //             this._initialized = true;
-    //             // call the onInit if exists
-    //             this._componentInstance.onInit?.bind(this._componentInstance)();
-    //         }
-    //
-    //         attributeChangedCallback(name: string, oldValue: string, newValue: string) {
-    //             // find the mapped config for changed attr
-    //             const attrConfigForChange = componentAttrs[name];
-    //             // map the class property name for the reflection of attr changes
-    //             this.updateInstanceFields(
-    //                 attrConfigForChange.propertyKey,
-    //                 RunTimeWebComponentClass.inferType(newValue, attrConfigForChange.typeConstructor)
-    //             );
-    //             if (this._initialized) {
-    //                 // call the onAttrChanges on instance only after initialization & if exists
-    //                 this._componentInstance.onAttrChanges?.bind(this._componentInstance)({
-    //                     name,
-    //                     oldValue,
-    //                     newValue
-    //                 });
-    //             }
-    //         }
-    //
-    //         disconnectedCallback() {
-    //             // call the onDestroy if exists
-    //             this._componentInstance.onDestroy?.bind(this._componentInstance)();
-    //         }
-    //     };
-    // }
-
-    getRuntimeClass(
-        componentClass: Class,
-        attrs: IAttrMetadata,
-        props: IPropMetadata,
+    getCustomElementClass(
+        attrs: string[],
+        props: string[],
+        viewContainer: string,
+        viewChildren: IViewChildMetadata[],
+        eventListener: IEventListenerMetadata[],
         template: string,
-        runtime: Runtime
-    ): CustomElementConstructor {
-        class WebComponentClass extends HTMLElement implements ICustomElement {
+        componentInstanceInjector: () => Class
+    ): Class<HTMLElement> {
+        return class extends HTMLElement implements ICustomElement {
             static get observedAttributes(): string[] {
-                return Object.keys(attrs);
+                return attrs;
             }
 
-            private readonly cId = Symbol('wc:id');
+            private readonly mappedInstance: any;
+
+            private state: CustomElementState;
 
             constructor() {
                 super();
-                this.dispatchLifecycleEvent('construct', {componentClass});
-                setTimeout(() => this.insertAdjacentHTML('beforeend', template));
+                this.mappedInstance = componentInstanceInjector();
+                this.state = CustomElementState.CONSTRUCTED;
+                console.log('web component is constructed with mapping to', this.mappedInstance.constructor.name);
+                // define properties
+                this.defineProperties();
+                // trigger property change to map the values from element to class
+                this.assignPropertyValues();
+                // setTimeout is required because of the execution order of onInit() calls
+                setTimeout(() => {
+                    // inject template
+                    this.insertAdjacentHTML('beforeend', template);
+                    // assign view container
+                    this.assignViewContainer();
+                    // assign view children
+                    this.assignViewChildren();
+                    // assign event handlers
+                    this.assignEventListeners();
+                });
             }
 
             attributeChangedCallback(name: string, oldValue: string, newValue: string): void {
-                // console.log('wcc:attributeChanged', name, oldValue, newValue);
-                this.dispatchLifecycleEvent<IAttrChanges>('propertyChanged', {
-                    name,
-                    oldValue,
-                    newValue
-                });
+                console.log('wcc:attributeChanged', name, oldValue, newValue);
+                // reflect attribute value changes to the mapped instance
+                this.mappedInstance[name] = newValue;
+                // notify only after connected
+                if (this.state === CustomElementState.CONNECTED) {
+                    // get the type constructor to convert the values to boolean or number, string is default
+                    const TypeConstructor = Metadata.getTypeMetadata(this.mappedInstance, name);
+                    // call the attrChanges callback if exist
+                    this.mappedInstance.onAttrChanges?.bind(this.mappedInstance)(
+                        name,
+                        TypeConstructor(oldValue),
+                        TypeConstructor(newValue)
+                    );
+                }
             }
 
-            propertyChangedCallback(name: string, oldValue: unknown, newValue: unknown): void {
-                // console.log('wcc:propertyChanged', name, oldValue, newValue);
-                this.dispatchLifecycleEvent<IPropChanges>('propertyChanged', {
-                    name,
-                    oldValue,
-                    newValue
-                });
+            propertyChangedCallback(name: string, oldValue: any, newValue: any): void {
+                console.log('wcc:propertyChanged', name, oldValue, newValue);
+                // reflect property value changes to the mapped instance
+                this.mappedInstance[name] = newValue;
+                // notify only after connected
+                if (this.state === CustomElementState.CONNECTED) {
+                    this.mappedInstance.onPropChanges?.bind(this.mappedInstance)(name, oldValue, newValue);
+                }
             }
 
             connectedCallback(): void {
-                // console.log('wcc:connected');
-                this.dispatchLifecycleEvent('connected', {});
+                console.log('wcc:connected');
+                this.state = CustomElementState.CONNECTED;
+                this.mappedInstance.onInit?.bind(this.mappedInstance)();
             }
 
             disconnectedCallback(): void {
-                // console.log('wcc:disconnected');
-                this.dispatchLifecycleEvent('disconnected', {});
+                this.state = CustomElementState.DISCONNECTED;
+                this.mappedInstance.onDestroy?.bind(this.mappedInstance)();
+                console.log('wcc:disconnected');
             }
 
-            dispatchLifecycleEvent<K>(eventType: TCustomElementLifecycleEventType, data: K): void {
-                window.dispatchEvent(
-                    new CustomEvent<ICustomElementEventDetail<K>>('wc:lifecycle-event', {
-                        detail: {
-                            type: eventType,
-                            cId: this.cId,
-                            data
+            // todo : add view init event and call
+
+            private defineProperties(): void {
+                props.forEach((prop) => {
+                    Object.defineProperty(this, prop, {
+                        get(): any {
+                            return this.value;
+                        },
+                        set(newValue: any): void {
+                            const oldValue = this.value;
+                            // call the prop changed callback
+                            this.propertyChangedCallback(prop, oldValue, newValue);
+                            // then update the value
+                            this.value = newValue;
                         }
-                    })
-                );
+                    });
+                });
             }
-        }
-        // add properties with setter
-        Object.keys(props).forEach((prop) => {
-            Object.defineProperty(WebComponentClass.prototype, prop, {
-                set(newValue: unknown) {
-                    const oldValue = this.value;
-                    // call lc method
-                    this.propertyChangedCallback(prop, oldValue, newValue);
-                    // then update the value
-                    this.value = newValue;
-                },
-                get() {
-                    return this.value;
-                }
-            });
-        });
 
-        return WebComponentClass;
+            private assignPropertyValues(): void {
+                ((props as unknown) as (keyof this)[]).forEach((prop: keyof this) => {
+                    this.mappedInstance[prop] = this[prop];
+                });
+            }
+
+            private assignViewContainer(): void {
+                if (viewContainer) {
+                    this.mappedInstance[viewContainer] = this;
+                }
+            }
+
+            private assignViewChildren(): void {
+                viewChildren.forEach((viewChildConfig: IViewChildMetadata) => {
+                    const results: NodeListOf<HTMLElement> =
+                        this.querySelectorAll<HTMLElement>(viewChildConfig.querySelector) || [];
+                    this.mappedInstance[viewChildConfig.propertyKey] =
+                        results.length === 0 ? null : results.length === 1 ? results[0] : results;
+                });
+            }
+
+            private assignEventListeners(): void {
+                eventListener.forEach((eventListenerConfig: IEventListenerMetadata) => {
+                    const results: NodeListOf<HTMLElement> = eventListenerConfig.querySelector
+                        ? document.querySelectorAll<HTMLElement>(eventListenerConfig.querySelector)
+                        : (([this] as unknown) as NodeListOf<HTMLElement>);
+                    results.forEach((result: HTMLElement) => {
+                        if (eventListenerConfig.predicate()) {
+                            result.addEventListener(eventListenerConfig.event, (event: Event) => {
+                                this.mappedInstance[eventListenerConfig.propertyKey].bind(this.mappedInstance)(
+                                    event,
+                                    result
+                                );
+                            });
+                        }
+                    });
+                });
+            }
+        };
     }
 }

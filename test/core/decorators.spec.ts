@@ -10,7 +10,8 @@ import {
     IObject,
     Listen,
     Module,
-    ViewChild
+    ViewChild,
+    ViewContainer
 } from '../../src';
 import {Metadata} from '../../src/core/metadata';
 
@@ -240,7 +241,7 @@ describe('Decorator functions', () => {
 
             @Component(componentConfig)
             class C {
-                @ViewChild()
+                @ViewContainer()
                 rootElement!: string;
 
                 @ViewChild('.with-selector')
