@@ -53,6 +53,8 @@ export class Runtime {
             const customElementClass = this.getCustomElementClass(
                 attrs,
                 props,
+                config.shadow,
+                config.styles || [],
                 viewContainer,
                 viewChildren,
                 eventListeners,
@@ -66,6 +68,8 @@ export class Runtime {
     getCustomElementClass(
         attrs: string[],
         props: string[],
+        shadowDOM: boolean,
+        styles: string[],
         viewContainer: string,
         viewChildren: IViewChildMetadata[],
         eventListener: IEventListenerMetadata[],
@@ -85,26 +89,15 @@ export class Runtime {
                 super();
                 this.mappedInstance = componentInstanceInjector();
                 this.state = CustomElementState.CONSTRUCTED;
-                console.log('web component is constructed with mapping to', this.mappedInstance.constructor.name);
                 // define properties
                 this.defineProperties();
                 // trigger property change to map the values from element to class
                 this.assignPropertyValues();
-                // setTimeout is required because of the execution order of onInit() calls
-                setTimeout(() => {
-                    // inject template
-                    this.insertAdjacentHTML('beforeend', template);
-                    // assign view container
-                    this.assignViewContainer();
-                    // assign view children
-                    this.assignViewChildren();
-                    // assign event handlers
-                    this.assignEventListeners();
-                });
+                // insert content of the component
+                this.insertContent();
             }
 
             attributeChangedCallback(name: string, oldValue: string, newValue: string): void {
-                console.log('wcc:attributeChanged', name, oldValue, newValue);
                 // reflect attribute value changes to the mapped instance
                 this.mappedInstance[name] = newValue;
                 // notify only after connected
@@ -121,7 +114,6 @@ export class Runtime {
             }
 
             propertyChangedCallback(name: string, oldValue: any, newValue: any): void {
-                console.log('wcc:propertyChanged', name, oldValue, newValue);
                 // reflect property value changes to the mapped instance
                 this.mappedInstance[name] = newValue;
                 // notify only after connected
@@ -131,7 +123,6 @@ export class Runtime {
             }
 
             connectedCallback(): void {
-                console.log('wcc:connected');
                 this.state = CustomElementState.CONNECTED;
                 this.mappedInstance.onInit?.bind(this.mappedInstance)();
             }
@@ -139,7 +130,6 @@ export class Runtime {
             disconnectedCallback(): void {
                 this.state = CustomElementState.DISCONNECTED;
                 this.mappedInstance.onDestroy?.bind(this.mappedInstance)();
-                console.log('wcc:disconnected');
             }
 
             // todo : add view init event and call
@@ -197,6 +187,29 @@ export class Runtime {
                             });
                         }
                     });
+                });
+            }
+
+            private insertContent(): void {
+                // setTimeout is required because of the execution order of onInit() calls
+                setTimeout(() => {
+                    const style = document.createElement('style');
+                    style.textContent = styles.join('\n');
+                    if (shadowDOM) {
+                        const shadow = this.attachShadow({mode: 'open'});
+                        shadow.appendChild(style);
+                        shadow.innerHTML += template;
+                    } else {
+                        // inject template
+                        this.appendChild(style);
+                        this.insertAdjacentHTML('beforeend', template);
+                    }
+                    // assign view container
+                    this.assignViewContainer();
+                    // assign view children
+                    this.assignViewChildren();
+                    // assign event handlers
+                    this.assignEventListeners();
                 });
             }
         };

@@ -5,7 +5,21 @@ import {App2Service} from '../services/app2.service';
 
 @Component({
     selector: 'app-main',
-    template: '<div><app-test></app-test></div>'
+    template: `
+        <div>
+            <h2>App Main</h2>
+            <app-test></app-test>
+        </div>
+    `,
+    shadow: false,
+    styles: [
+        `
+            app-main {
+                background-color: green;
+                display: block;
+            }
+        `
+    ]
 })
 export class App implements IOnInit {
     @Attr()
@@ -41,7 +55,6 @@ export class App implements IOnInit {
     }
 
     onInit(): void {
-        console.log('app-main on init', this);
         this.app.appTest();
         this.app2.app2Log();
     }

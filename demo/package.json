@@ -12,6 +12,8 @@
     "serve": "static-server build"
   },
   "dependencies": {
+    "@webcomponents/shadycss": "^1.10.2",
+    "@webcomponents/shadydom": "^1.8.0",
     "@webcomponents/webcomponentsjs": "^2.5.0",
     "core-js": "^3.10.1",
     "logrocket": "^1.0.15",

@@ -3,7 +3,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 module.exports = {
-    entry: './app/main.ts',
+    entry: process.env.TARGET_ENV === 'default' ? './app/main.umd.ts' : './app/main.esm.ts',
     mode: process.env.NODE_ENV,
     cache: false,
     devtool: 'inline-source-map',

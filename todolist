@@ -1,12 +1,16 @@
 todo list
 
-0 - clear README
-2 - shadow option
-3 - template loader? jsx?
-4 - styling strategy
+1 - shadow option
+2 - styling strategy
+
+1 - clear README
+2 - template loader? jsx?
 
 todo others
 
-0 - cli tool
+others
+
+0 - ts project starter
+0 - cli tool ?
 1 - router project
 2 - swipe project

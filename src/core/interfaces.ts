@@ -28,6 +28,8 @@ export interface IModuleConfig {
 export interface IComponentConfig {
     selector: string;
     template: string;
+    shadow: boolean;
+    styles?: string[];
 }
 
 export interface IAttrChanges {

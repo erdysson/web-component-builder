@@ -4,7 +4,21 @@ import {App2Service} from '../services/app2.service';
 
 @Component({
     selector: 'app-test',
-    template: '<div>Hey There</div>'
+    template: '<div>App Test</div>',
+    shadow: true,
+    styles: [
+        `
+            :host {
+                display: block;
+                height: 220px;
+            }
+
+            :host div {
+                background-color: red;
+                color: white;
+            }
+        `
+    ]
 })
 export class Test implements IOnInit {
     @Prop()
@@ -13,7 +27,6 @@ export class Test implements IOnInit {
     constructor(private readonly app2: App2Service) {}
 
     onInit(): void {
-        console.log('app-test on init');
         this.app2.app2Log();
     }
 }
