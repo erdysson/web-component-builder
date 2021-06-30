@@ -1,4 +1,4 @@
-import {Attr, Component, IOnInit, Listen, Prop, ViewChild} from 'web-component-builder';
+import {Attr, Component, IOnInit, Listen, Prop, ViewChild, ViewContainer} from 'web-component-builder';
 
 import {AppService} from '../services/app.service';
 import {App2Service} from '../services/app2.service';
@@ -45,6 +45,9 @@ export class App implements IOnInit {
 
     @ViewChild('app-test')
     appTest!: HTMLElement;
+
+    @ViewContainer()
+    hostElement!: HTMLElement;
 
     constructor(private readonly app2: App2Service, private readonly app: AppService) {}
 

@@ -9,7 +9,8 @@
     "webpack:dev:modern": "TARGET_ENV=modern NODE_ENV=development BROWSERSLIST_ENV=modern webpack serve -c webpack.config.js",
     "webpack:dev:default": "TARGET_ENV=default NODE_ENV=development BROWSERSLIST_ENV=production webpack serve -c webpack.config.js",
     "webpack:prod": "TARGET_ENV=default NODE_ENV=production BROWSERSLIST_ENV=production webpack build -c webpack.config.js",
-    "serve": "static-server build"
+    "serve": "static-server build",
+    "link:lib": "npm link web-component-builder"
   },
   "dependencies": {
     "@webcomponents/shadycss": "^1.10.2",

@@ -52,7 +52,9 @@
     "rollup:bundle": "rollup -c rollup.config.js -w",
     "lib:test": "karma start",
     "lib:build": "npm run tsc:build && npm run rollup:bundle",
-    "lib:build:watch": "npm run tsc:build && npm run rollup:bundle -- -w"
+    "lib:build:watch": "npm run tsc:build && npm run rollup:bundle -- -w",
+    "lib:link": "cd lib && npm link web-component-builder",
+    "lib:unlink": "cd lib && npm unlink web-component-builder"
   },
   "dependencies": {
     "@babel/runtime": "^7.13.10",
