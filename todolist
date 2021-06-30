@@ -1,16 +1,10 @@
 todo list
-
-1 - shadow option
-2 - styling strategy
-
+0 - fix ie for styles
 1 - clear README
 2 - template loader? jsx?
 
 todo others
 
-others
-
 0 - ts project starter
-0 - cli tool ?
-1 - router project
-2 - swipe project
+1 - cli tool ?
+2 - router project
