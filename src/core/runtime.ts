@@ -153,7 +153,7 @@ export class Runtime {
             }
 
             private assignPropertyValues(): void {
-                ((props as unknown) as (keyof this)[]).forEach((prop: keyof this) => {
+                (props as unknown as (keyof this)[]).forEach((prop: keyof this) => {
                     this.mappedInstance[prop] = this[prop];
                 });
             }
@@ -178,7 +178,7 @@ export class Runtime {
                 eventListener.forEach((eventListenerConfig: IEventListenerMetadata) => {
                     const results: NodeListOf<HTMLElement> = eventListenerConfig.querySelector
                         ? document.querySelectorAll<HTMLElement>(eventListenerConfig.querySelector)
-                        : (([this] as unknown) as NodeListOf<HTMLElement>);
+                        : ([this] as unknown as NodeListOf<HTMLElement>);
                     results.forEach((result: HTMLElement) => {
                         if (eventListenerConfig.predicate()) {
                             result.addEventListener(eventListenerConfig.event, (event: Event) => {
