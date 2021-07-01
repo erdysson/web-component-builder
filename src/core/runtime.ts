@@ -18,19 +18,18 @@ export class Runtime {
         const params = Metadata.getConstructorParams(hostClass);
         // init providers that are used in component(s)
         return params.map((providerClass: Class) => {
-            this.createProviderInstance(providerClass);
+            // validate and make sure that class is registered in the module
+            if (!this.moduleConfig.providers.includes(providerClass)) {
+                throw Error('Injected provider is not registered in the module');
+            }
+            if (!this.providerInstanceMap.has(providerClass)) {
+                this.createProviderInstance(providerClass);
+            }
             return this.providerInstanceMap.get(providerClass);
         });
     }
 
     createProviderInstance(providerClass: Class): void {
-        if (this.providerInstanceMap.has(providerClass)) {
-            return;
-        }
-        // validate and make sure that class is registered in the module
-        if (!this.moduleConfig.providers.includes(providerClass)) {
-            throw Error('Injected provider is not registered in the module');
-        }
         // all dependencies are initiated, now create the wrapping provider with injected params
         const constructorParams = this.getConstructorParamsFor(providerClass);
         const providerInstance: InstanceType<typeof providerClass> = new providerClass(...constructorParams);
@@ -90,11 +89,16 @@ export class Runtime {
                 this.mappedInstance = componentInstanceInjector();
                 this.state = CustomElementState.CONSTRUCTED;
                 // define properties
-                this.defineProperties();
+                this.defineProperties(this);
                 // trigger property change to map the values from element to class
                 this.assignPropertyValues();
                 // insert content of the component
                 this.insertContent();
+
+                setTimeout(() => {
+                    // after view init
+                    this.mappedInstance.onViewInit?.bind(this.mappedInstance)();
+                });
             }
 
             attributeChangedCallback(name: string, oldValue: string, newValue: string): void {
@@ -105,21 +109,22 @@ export class Runtime {
                     // get the type constructor to convert the values to boolean or number, string is default
                     const TypeConstructor = Metadata.getTypeMetadata(this.mappedInstance, name);
                     // call the attrChanges callback if exist
-                    this.mappedInstance.onAttrChanges?.bind(this.mappedInstance)(
+                    this.mappedInstance.onAttrChanges?.bind(this.mappedInstance)({
                         name,
-                        TypeConstructor(oldValue),
-                        TypeConstructor(newValue)
-                    );
+                        oldValue: TypeConstructor(oldValue),
+                        newValue: TypeConstructor(newValue)
+                    });
                 }
             }
 
             propertyChangedCallback(name: string, oldValue: any, newValue: any): void {
                 // reflect property value changes to the mapped instance
                 this.mappedInstance[name] = newValue;
-                // notify only after connected
-                if (this.state === CustomElementState.CONNECTED) {
-                    this.mappedInstance.onPropChanges?.bind(this.mappedInstance)(name, oldValue, newValue);
-                }
+                this.mappedInstance.onPropChanges?.bind(this.mappedInstance)({
+                    name,
+                    oldValue,
+                    newValue
+                });
             }
 
             connectedCallback(): void {
@@ -132,23 +137,20 @@ export class Runtime {
                 this.mappedInstance.onDestroy?.bind(this.mappedInstance)();
             }
 
-            // todo : add view init event and call
+            private defineProperties(context: ICustomElement): void {
+                props.forEach((prop) => buildProperty(context, prop));
 
-            private defineProperties(): void {
-                props.forEach((prop) => {
-                    Object.defineProperty(this, prop, {
-                        get(): any {
-                            return this.value;
+                function buildProperty(context: any, prop: string) {
+                    Object.defineProperty(context, prop, {
+                        get: function () {
+                            return this[`_${prop}`];
                         },
-                        set(newValue: any): void {
-                            const oldValue = this.value;
-                            // call the prop changed callback
-                            this.propertyChangedCallback(prop, oldValue, newValue);
-                            // then update the value
-                            this.value = newValue;
+                        set: function (value) {
+                            context.propertyChangedCallback?.bind(context)(prop, this[prop], value);
+                            this[`_${prop}`] = value;
                         }
                     });
-                });
+                }
             }
 
             private assignPropertyValues(): void {
@@ -165,10 +167,11 @@ export class Runtime {
 
             private assignViewChildren(): void {
                 viewChildren.forEach((viewChildConfig: IViewChildMetadata) => {
-                    const results: NodeListOf<HTMLElement> =
-                        this.querySelectorAll<HTMLElement>(viewChildConfig.querySelector) || [];
+                    const elements: NodeListOf<HTMLElement> = this.querySelectorAll<HTMLElement>(
+                        viewChildConfig.querySelector
+                    );
                     this.mappedInstance[viewChildConfig.propertyKey] =
-                        results.length === 0 ? null : results.length === 1 ? results[0] : results;
+                        elements.length === 0 ? null : elements.length === 1 ? elements.item(0) : Array.from(elements);
                 });
             }
 
@@ -193,15 +196,21 @@ export class Runtime {
             private insertContent(): void {
                 // setTimeout is required because of the execution order of onInit() calls
                 setTimeout(() => {
-                    const style = document.createElement('style');
-                    style.textContent = styles.join('\n');
                     if (shadowDOM) {
                         const shadow = this.attachShadow({mode: 'open'});
-                        shadow.appendChild(style);
+                        if (styles.length) {
+                            const style = document.createElement('style');
+                            style.textContent = styles.join('\n');
+                            shadow.appendChild(style);
+                        }
                         shadow.innerHTML += template;
                     } else {
                         // inject template
-                        this.appendChild(style);
+                        if (styles.length) {
+                            const style = document.createElement('style');
+                            style.textContent = styles.join('\n');
+                            this.appendChild(style);
+                        }
                         this.insertAdjacentHTML('beforeend', template);
                     }
                     // assign view container

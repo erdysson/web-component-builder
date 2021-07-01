@@ -2,12 +2,10 @@ import {createSandbox, SinonSandbox, SinonSpy} from 'sinon';
 
 import {
     Attr,
+    Class,
     Component,
-    IClass,
     IComponentConfig,
-    Inject,
     Injectable,
-    IObject,
     Listen,
     Module,
     ViewChild,
@@ -17,9 +15,11 @@ import {Metadata} from '../../src/core/metadata';
 
 describe('Decorator functions', () => {
     // dummy component config
-    const componentConfig = {
+    const componentConfig: IComponentConfig = {
         selector: 'a-selector',
-        template: '<div>a-template</div>'
+        template: '<div>a-template</div>',
+        shadow: false,
+        styles: []
     };
     // sandbox for sinon related ops
     let sandbox: SinonSandbox;
@@ -61,7 +61,7 @@ describe('Decorator functions', () => {
         it('should set component metadata correctly', () => {
             // setComponentConfig spy
             const setComponentConfigSpy: SinonSpy<
-                [componentClass: IClass, componentConfig: IComponentConfig],
+                [componentClass: Class, componentConfig: IComponentConfig],
                 void
             > = sandbox.spy(Metadata, 'setComponentConfig');
 
@@ -77,103 +77,9 @@ describe('Decorator functions', () => {
         });
     });
 
-    describe('@Injectable() decorator', () => {
-        it('should mark class as "Injectable"', () => {
-            // setComponentConfig spy
-            const setProviderConfigSpy = sandbox.spy(Metadata, 'setProviderConfig');
-
-            // sample provider
-            @Injectable()
-            class P {}
-
-            // run assertions
-            expect(setProviderConfigSpy.calledOnce).toBeTrue();
-            expect(setProviderConfigSpy.getCall(0).args[0]).toEqual(P);
-            expect(setProviderConfigSpy.getCall(0).args[1]).toBeTrue();
-            expect(Metadata.getProviderConfig(P)).toBeTrue();
-        });
-    });
-
-    describe('@Inject() decorator', () => {
-        let sandbox: SinonSandbox;
-        let setInjectedProviderConfigSpy: SinonSpy<
-            [hostClass: IClass, providerClass: IClass, targetParameterIndex: number],
-            void
-        >;
-
-        beforeEach(() => {
-            sandbox = createSandbox();
-            setInjectedProviderConfigSpy = sandbox.spy(Metadata, 'setInjectedProviderConfig');
-        });
-
-        afterEach(() => {
-            sandbox.restore();
-        });
-
-        it('should have inject config as [], if has no injected providers', () => {
-            @Component(componentConfig)
-            class C {}
-
-            expect(setInjectedProviderConfigSpy.callCount).toBe(0);
-
-            const metadata = Metadata.getInjectedProviderConfig(C);
-            expect(metadata).not.toBeUndefined();
-            expect(metadata).toEqual([]);
-        });
-
-        it('should set inject metadata correctly to the components', () => {
-            class I {}
-
-            @Component(componentConfig)
-            class C {
-                constructor(@Inject(I) private readonly i: I) {}
-            }
-
-            expect(setInjectedProviderConfigSpy.calledOnce).toBeTrue();
-            expect(setInjectedProviderConfigSpy.getCall(0).args[0]).toEqual(C);
-            expect(setInjectedProviderConfigSpy.getCall(0).args[1]).toEqual(I);
-            expect(setInjectedProviderConfigSpy.getCall(0).args[2]).toBe(0);
-            // retrieve saved metadata - only the first, since only one injected provider exists
-            const {providerClass, targetParameterIndex} = Metadata.getInjectedProviderConfig(C)[0];
-
-            expect(providerClass).toEqual(I);
-            expect(targetParameterIndex).toBe(0);
-        });
-
-        it('should keep the injected provider order', () => {
-            class I {}
-
-            class J {}
-
-            @Component(componentConfig)
-            class C {
-                constructor(@Inject(I) private readonly i: I, @Inject(J) private readonly j: J) {}
-            }
-
-            expect(setInjectedProviderConfigSpy.calledTwice).toBeTrue();
-            // decorator execution order : rtl
-            // first call
-            expect(setInjectedProviderConfigSpy.getCall(0).args[0]).toEqual(C);
-            expect(setInjectedProviderConfigSpy.getCall(0).args[1]).toEqual(J);
-            expect(setInjectedProviderConfigSpy.getCall(0).args[2]).toBe(1);
-            // second call
-            expect(setInjectedProviderConfigSpy.getCall(1).args[0]).toEqual(C);
-            expect(setInjectedProviderConfigSpy.getCall(1).args[1]).toEqual(I);
-            expect(setInjectedProviderConfigSpy.getCall(1).args[2]).toBe(0);
-            // retrieve saved metadata
-            const [j, i] = Metadata.getInjectedProviderConfig(C);
-            // first provider in metadata config
-            expect(j.providerClass).toEqual(J);
-            expect(j.targetParameterIndex).toBe(1);
-            // second provider in metadata config
-            expect(i.providerClass).toEqual(I);
-            expect(i.targetParameterIndex).toBe(0);
-        });
-    });
-
     describe('@Attr() decorator', () => {
         let sandbox: SinonSandbox;
-        let setComponentAttrConfigSpy: SinonSpy<[componentInstance: IObject, propertyKey: string, name: string], void>;
+        let setComponentAttrConfigSpy: SinonSpy<[componentInstance: any, propertyKey: string, name: string], void>;
 
         beforeEach(() => {
             sandbox = createSandbox();
@@ -190,7 +96,7 @@ describe('Decorator functions', () => {
 
             const metadata = Metadata.getComponentAttrConfig(C);
             expect(metadata).not.toBeUndefined();
-            expect(metadata).toEqual([]);
+            expect(metadata).toEqual({});
         });
 
         it('should set attr metadata correctly', () => {
@@ -219,14 +125,13 @@ describe('Decorator functions', () => {
 
     describe('@ViewChild() decorator', () => {
         let sandbox: SinonSandbox;
-        let setViewChildConfigSpy: SinonSpy<
-            [componentInstance: IObject, propertyKey: string, querySelector?: string | undefined],
-            void
-        >;
+        let setViewChildConfigSpy: SinonSpy<[componentInstance: any, propertyKey: string, querySelector: string], void>;
+        let setViewContainerConfigSpy: SinonSpy<[componentInstance: any, propertyKey: string], void>;
 
         beforeEach(() => {
             sandbox = createSandbox();
             setViewChildConfigSpy = sandbox.spy(Metadata, 'setViewChildrenConfig');
+            setViewContainerConfigSpy = sandbox.spy(Metadata, 'setViewContainerConfig');
         });
 
         afterEach(() => {
@@ -236,7 +141,9 @@ describe('Decorator functions', () => {
         it('should set metadata correctly', () => {
             const componentConfig: IComponentConfig = {
                 selector: 'comp-with-child-selector1',
-                template: '<div>Template 1</div>'
+                template: '<div>Template 1</div>',
+                shadow: false,
+                styles: []
             };
 
             @Component(componentConfig)
@@ -248,22 +155,26 @@ describe('Decorator functions', () => {
                 childElement!: string;
             }
 
-            expect(setViewChildConfigSpy.calledTwice).toBeTrue();
-            // first call
+            // view container call
+            expect(setViewContainerConfigSpy.calledOnce).toBeTrue();
+            expect(setViewContainerConfigSpy.getCall(0).args[0]).toBeInstanceOf(Object);
+            expect(setViewContainerConfigSpy.getCall(0).args[0].constructor).toEqual(C);
+            expect(setViewContainerConfigSpy.getCall(0).args[1]).toBe('rootElement');
+            // view child call
+            expect(setViewChildConfigSpy.calledOnce).toBeTrue();
             expect(setViewChildConfigSpy.getCall(0).args[0]).toBeInstanceOf(Object);
             expect(setViewChildConfigSpy.getCall(0).args[0].constructor).toEqual(C);
-            expect(setViewChildConfigSpy.getCall(0).args[1]).toBe('rootElement');
-            expect(setViewChildConfigSpy.getCall(0).args[2]).toBe(undefined);
-            // second call
-            expect(setViewChildConfigSpy.getCall(1).args[0]).toBeInstanceOf(Object);
-            expect(setViewChildConfigSpy.getCall(1).args[0].constructor).toEqual(C);
-            expect(setViewChildConfigSpy.getCall(1).args[1]).toBe('childElement');
-            expect(setViewChildConfigSpy.getCall(1).args[2]).toBe('.with-selector');
+            expect(setViewChildConfigSpy.getCall(0).args[1]).toBe('childElement');
+            expect(setViewChildConfigSpy.getCall(0).args[2]).toBe('.with-selector');
 
-            const metadata = Metadata.getViewChildrenConfig(C);
-            expect(metadata).not.toBeUndefined();
-            expect(metadata[0]).toEqual({propertyKey: 'rootElement', querySelector: undefined});
-            expect(metadata[1]).toEqual({propertyKey: 'childElement', querySelector: '.with-selector'});
+            const viewContainerMetadata = Metadata.getViewContainerConfig(C);
+            const viewChildrenMetadata = Metadata.getViewChildrenConfig(C);
+
+            expect(viewContainerMetadata).not.toBeUndefined();
+            expect(viewChildrenMetadata).not.toBeUndefined();
+
+            expect(viewContainerMetadata).toEqual('rootElement');
+            expect(viewChildrenMetadata[0]).toEqual({propertyKey: 'childElement', querySelector: '.with-selector'});
         });
     });
 
@@ -271,7 +182,7 @@ describe('Decorator functions', () => {
         let sandbox: SinonSandbox;
         let setEventListenerConfigSpy: SinonSpy<
             [
-                componentInstance: IObject,
+                componentInstance: any,
                 propertyKey: string,
                 event: string,
                 querySelector: string,
@@ -292,7 +203,9 @@ describe('Decorator functions', () => {
         it('should set metadata correctly', () => {
             const componentConfig: IComponentConfig = {
                 selector: 'comp-with-child-selector1',
-                template: '<div>Template 1</div>'
+                template: '<div>Template 1</div>',
+                shadow: false,
+                styles: []
             };
 
             const predicate = () => true;

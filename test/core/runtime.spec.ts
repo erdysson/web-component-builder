@@ -7,13 +7,18 @@ import {
     IAttrChanges,
     IComponentConfig,
     IModuleConfig,
-    Inject,
     Injectable,
     IOnAttrChanges,
     IOnDestroy,
     IOnInit,
+    IOnPropChanges,
     IOnViewInit,
-    Module
+    IPropChanges,
+    Listen,
+    Module,
+    Prop,
+    ViewChild,
+    ViewContainer
 } from '../../src';
 import {Runtime} from '../../src/core/runtime';
 
@@ -43,18 +48,20 @@ describe('Runtime functions', () => {
         expect(runtimeInitModuleSpy.getCall(0).args[0]).toEqual(M);
     });
 
-    it('initModule(moduleClass) should call initComponent(componentClass) in order', () => {
+    it('initModule() should register runtime web components in order', () => {
         const initModuleSpy = sandbox.spy(Runtime.prototype, 'initModule');
-        const initComponentSpy = sandbox.spy(Runtime.prototype, 'initComponent');
+        const registerComponentSpy = sandbox.spy(Runtime.prototype, 'registerRuntimeWebComponents');
 
         const componentConfig1: IComponentConfig = {
             selector: 'comp-1',
-            template: '<div>Component 1</div>'
+            template: '<div>Component 1</div>',
+            shadow: false
         };
 
         const componentConfig2: IComponentConfig = {
             selector: 'comp-2',
-            template: '<div>Component 2</div>'
+            template: '<div>Component 2</div>',
+            shadow: false
         };
 
         @Component(componentConfig1)
@@ -74,23 +81,25 @@ describe('Runtime functions', () => {
         bootstrap(M);
 
         expect(initModuleSpy.calledOnce).toBeTrue();
-        expect(initComponentSpy.callCount).toEqual(2);
-        expect(initComponentSpy.getCall(0).args[0]).toEqual(C1);
-        expect(initComponentSpy.getCall(1).args[0]).toEqual(C2);
+        expect(registerComponentSpy.callCount).toEqual(1);
+        expect(registerComponentSpy.getCall(0).args[0][0]).toEqual(C1);
+        expect(registerComponentSpy.getCall(0).args[0][1]).toEqual(C2);
     });
 
-    it('initComponent(componentClass) should init components correctly', () => {
+    it('registerRuntimeWebComponents() should define components correctly', () => {
         const runtimeSpy = sandbox.spy(Runtime.prototype);
         const customElementsDefineSpy = sandbox.spy(customElements, 'define');
 
         const componentConfigA: IComponentConfig = {
             selector: 'comp-a',
-            template: '<div>Component A</div>'
+            template: '<div>Component A</div>',
+            shadow: false
         };
 
         const componentConfigB: IComponentConfig = {
             selector: 'comp-b',
-            template: '<div>Component B</div>'
+            template: '<div>Component B</div>',
+            shadow: false
         };
 
         @Injectable()
@@ -98,7 +107,7 @@ describe('Runtime functions', () => {
 
         @Component(componentConfigA)
         class C1 {
-            constructor(@Inject(P1) private p1: P1) {}
+            constructor(private p1: P1) {}
         }
 
         @Component(componentConfigB)
@@ -115,33 +124,14 @@ describe('Runtime functions', () => {
         bootstrap(M);
 
         // C1, C2
-        expect(runtimeSpy.initComponent.calledTwice).toBeTrue();
-        // C1, C2
-        expect(runtimeSpy.initComponent.getCall(0).args[0]).toEqual(C1);
-        expect(runtimeSpy.initComponent.getCall(1).args[0]).toEqual(C2);
-        // C1 - only for P1 provider
-        expect(runtimeSpy.initProvider.callCount).toEqual(1);
-        expect(runtimeSpy.initProvider.getCall(0).args[0]).toEqual(P1);
-        // P1 initiation
-        expect(runtimeSpy.createProviderInstance.calledOnce).toBeTrue();
-        // constructor params calls - C1, C2, and P1 = 3
-        expect(runtimeSpy.getHostClassConstructorParams.callCount).toEqual(3);
-        expect(runtimeSpy.getHostClassConstructorParams.returned([])).toBeTrue();
-        // component factory calls - C1, C2
-        expect(runtimeSpy.getComponentFactory.calledTwice).toBeTrue();
-        // C1
-        expect(runtimeSpy.getComponentFactory.getCall(0).args.length).toEqual(6);
-        expect(runtimeSpy.getComponentFactory.getCall(0).args[0]).toBe(C1);
-        // C2
-        expect(runtimeSpy.getComponentFactory.getCall(1).args.length).toEqual(6);
-        expect(runtimeSpy.getComponentFactory.getCall(1).args[0]).toBe(C2);
-        // C1, C2
+        expect(runtimeSpy.getCustomElementClass.calledTwice).toBeTrue();
+        // define calls
         expect(customElementsDefineSpy.calledTwice).toBeTrue();
         expect(customElementsDefineSpy.getCall(0).args[0]).toEqual(componentConfigA.selector);
         expect(customElementsDefineSpy.getCall(1).args[0]).toEqual(componentConfigB.selector);
     });
 
-    it('initProvider(providerClass) should only be called if the providerClass is injected to a componentClass', () => {
+    it('createComponentInstance() should create component instance when the element is added to DOM', () => {
         const runtimeSpy = sandbox.spy(Runtime.prototype);
 
         @Injectable()
@@ -149,7 +139,7 @@ describe('Runtime functions', () => {
 
         @Injectable()
         class P2 {
-            constructor(@Inject(P1) private p1: P1) {}
+            constructor(private p1: P1) {}
         }
 
         @Injectable()
@@ -157,10 +147,11 @@ describe('Runtime functions', () => {
 
         @Component({
             selector: 'test-c',
-            template: '<div>Test C</div>'
+            template: '<div>Test C</div>',
+            shadow: false
         })
         class C {
-            constructor(@Inject(P3) private p3: P3) {}
+            constructor(private p3: P3) {}
         }
 
         @Module({
@@ -170,68 +161,78 @@ describe('Runtime functions', () => {
         class M {}
 
         bootstrap(M);
-        // only for P3
-        expect(runtimeSpy.initProvider.calledOnce).toBeTrue();
-        expect(runtimeSpy.initProvider.getCall(0).args[0]).toEqual(P3);
-        // only for P3
+
+        document.body.insertAdjacentHTML('beforeend', '<test-c></test-c>');
+
+        // C1
+        expect(runtimeSpy.createComponentInstance.calledOnce).toBeTrue();
+        expect(runtimeSpy.createComponentInstance.getCall(0).args[0]).toEqual(C);
+        // P1
         expect(runtimeSpy.createProviderInstance.calledOnce).toBeTrue();
         expect(runtimeSpy.createProviderInstance.getCall(0).args[0]).toEqual(P3);
         // C1 and P3
-        expect(runtimeSpy.getHostClassConstructorParams.callCount).toBe(2);
+        expect(runtimeSpy.getConstructorParamsFor.callCount).toBe(2);
         // constructor params for P3 - []
-        expect(runtimeSpy.getHostClassConstructorParams.returnValues[0]).toEqual([]);
+        expect(runtimeSpy.getConstructorParamsFor.returnValues[0]).toEqual([]);
         // constructor params for C - [instanceof P1]
-        expect(runtimeSpy.getHostClassConstructorParams.returnValues[1][0]).toBeInstanceOf(P3);
+        expect(runtimeSpy.getConstructorParamsFor.returnValues[1][0]).toBeInstanceOf(P3);
     });
 
-    it('initProvider(providerClass) should throw exception, if the provider is not marked as @Injectable()', () => {
+    it('createProviderInstance() should create instance only if the providerClass is injected to a componentClass', () => {
         const runtimeSpy = sandbox.spy(Runtime.prototype);
 
         @Injectable()
         class P1 {}
 
-        class P2 {}
+        @Injectable()
+        class P2 {
+            constructor(private p1: P1) {}
+        }
+
+        @Injectable()
+        class P3 {}
 
         @Component({
-            selector: 'xyz',
-            template: '<div>XYZ</div>'
+            selector: 'test-c12',
+            template: '<div>Test C</div>',
+            shadow: false
         })
         class C {
-            constructor(@Inject(P1) private p1: P1, @Inject(P2) private p2: P2) {}
+            constructor(private p3: P3) {}
         }
 
         @Module({
             components: [C],
-            providers: [P1, P2]
+            providers: [P1, P2, P3]
         })
         class M {}
 
-        // wrap to try/catch so that test does not fail!
-        try {
-            bootstrap(M);
-            // P1, P2
-            expect(runtimeSpy.initProvider.callCount).toBe(2);
-            expect(runtimeSpy.initProvider.getCall(0)).not.toThrowError();
-            expect(runtimeSpy.initProvider.getCall(1)).toThrowError();
-            // only for P1
-            expect(runtimeSpy.createProviderInstance.calledOnce).toBeTrue();
-        } catch (e) {
-            //
-        }
+        bootstrap(M);
+
+        document.body.insertAdjacentHTML('beforeend', '<test-c12></test-c12>');
+
+        // only for P3
+        expect(runtimeSpy.createProviderInstance.calledOnce).toBeTrue();
+        expect(runtimeSpy.createProviderInstance.getCall(0).args[0]).toEqual(P3);
+        // C1 and P3
+        expect(runtimeSpy.getConstructorParamsFor.callCount).toBe(2);
+        // constructor params for P3 - []
+        expect(runtimeSpy.getConstructorParamsFor.returnValues[0]).toEqual([]);
+        // constructor params for C - [instanceof P1]
+        expect(runtimeSpy.getConstructorParamsFor.returnValues[1][0]).toBeInstanceOf(P3);
     });
 
-    it('initProvider(providerClass) should throw exception, if the provider is not registered in the module', () => {
-        const runtimeSpy = sandbox.spy(Runtime.prototype);
-
+    it('createProviderInstance() should throw exception, if the provider is not in the providers array', () => {
         @Injectable()
         class P1 {}
 
         @Component({
-            selector: 'abc',
-            template: '<div>ABC</div>'
+            selector: 'provider-test-exception-comp',
+            template: '<div>XYZ</div>',
+            shadow: false
         })
         class C {
-            constructor(@Inject(P1) private p1: P1) {}
+            constructor(private p1: P1) {}
         }
 
         @Module({
@@ -239,46 +240,44 @@ describe('Runtime functions', () => {
             providers: []
         })
         class M {}
-        // wrap to try/catch so that test does not fail!
-        try {
-            bootstrap(M);
-            // P1
-            expect(runtimeSpy.initProvider.callCount).toBe(1);
-            expect(runtimeSpy.initProvider.getCall(0)).toThrowError();
-            // no provider should be created
-            expect(runtimeSpy.createProviderInstance.callCount).toBe(0);
-        } catch (e) {
-            //
-        }
+
+        const runtime = new Runtime();
+
+        const runtimeSpy = sandbox.spy(runtime);
+
+        runtime.initModule(M);
+
+        expect(() => runtimeSpy.getConstructorParamsFor(C)).toThrowError();
     });
 
-    it('initProvider(providerClass) -> createProviderInstance(providerInstance) should only one instance be created per providerClass', () => {
-        const createProviderInstanceSpy = sandbox.spy(Runtime.prototype, 'createProviderInstance');
+    it('createProviderInstance() should create only one instance per providerClass', () => {
+        const runtimeSpy = sandbox.spy(Runtime.prototype);
 
         @Injectable()
         class P1 {}
 
         @Injectable()
         class P2 {
-            constructor(@Inject(P1) private p1: P1) {}
+            constructor(private p1: P1) {}
         }
 
         @Injectable()
         class P3 {
-            constructor(@Inject(P2) private p2: P2, @Inject(P1) private p1: P1) {}
+            constructor(private p2: P2, private p1: P1) {}
         }
 
         @Injectable()
         class P4 {
-            constructor(@Inject(P1) private p1: P1, @Inject(P3) private p3: P3, @Inject(P2) private p2: P2) {}
+            constructor(private p1: P1, private p3: P3, private p2: P2) {}
         }
 
         @Component({
             selector: 'my-comp',
-            template: '<div>my comp</div>'
+            template: '<div>my comp</div>',
+            shadow: false
         })
         class C {
-            constructor(@Inject(P2) private p2: P2, @Inject(P4) private p4: P4) {}
+            constructor(private p2: P2, private p4: P4) {}
         }
 
         @Module({
@@ -289,13 +288,17 @@ describe('Runtime functions', () => {
 
         bootstrap(M);
 
-        expect(createProviderInstanceSpy.callCount).toEqual(4);
+        document.body.insertAdjacentHTML('beforeend', '<my-comp></my-comp>');
+
+        // for each distinct injection
+        expect(runtimeSpy.createProviderInstance.callCount).toEqual(4);
     });
 
     it('components should be initiated without errors if there is no lifecycle method', (done) => {
         const componentConfigTest: IComponentConfig = {
             selector: 'comp-test',
-            template: '<div>Component Test</div>'
+            template: '<div>Component Test</div>',
+            shadow: false
         };
 
         @Component(componentConfigTest)
@@ -343,30 +346,38 @@ describe('Runtime functions', () => {
 
         const componentConfigX: IComponentConfig = {
             selector: 'comp-x',
-            template: '<div>Component X</div>'
+            template: '<div>Component X</div>',
+            shadow: false
         };
 
         @Component(componentConfigX)
-        class C1 implements IOnAttrChanges, IOnInit, IOnViewInit, IOnDestroy {
-            constructor(@Inject(P1) private p1: P1) {}
+        class C1 implements IOnAttrChanges, IOnPropChanges, IOnInit, IOnViewInit, IOnDestroy {
+            constructor(private p1: P1) {}
 
             @Attr()
             index!: string;
 
+            @Prop()
+            list!: string[];
+
             onAttrChanges(changes?: IAttrChanges) {
-                console.log(...this.p1.sayWelcome(changes));
+                this.p1.sayWelcome(changes);
+            }
+
+            onPropChanges(changes?: IPropChanges) {
+                this.p1.sayWelcome(changes);
             }
 
             onInit(): void {
-                console.log(this.p1.sayHello('C1:onInit'));
+                this.p1.sayHello('C1:onInit');
             }
 
             onViewInit(): void {
-                console.log(this.p1.sayHello('C1:onViewInit'));
+                this.p1.sayHello('C1:onViewInit');
             }
 
             onDestroy() {
-                console.log(this.p1.sayGoodbye('C1:onDestroy'));
+                this.p1.sayGoodbye('C1:onDestroy');
             }
         }
 
@@ -405,17 +416,29 @@ describe('Runtime functions', () => {
             expect(compX).not.toBe(null);
             expect((compX as HTMLElement).innerHTML).toEqual(componentConfigX.template);
 
-            // trigger changes
+            // trigger attr changes
             (compX as HTMLElement).setAttribute('index', '1');
 
-            const changes: IAttrChanges = {index: {oldValue: '0', newValue: '1'}};
+            const attrChanges: IAttrChanges = {name: 'index', oldValue: '0', newValue: '1'};
 
             // validate changes
             expect(componentSpy.onAttrChanges.calledOnce).toBeTrue();
-            expect(componentSpy.onAttrChanges.getCall(0).args[0]).toEqual(changes);
+            expect(componentSpy.onAttrChanges.getCall(0).args[0]).toEqual(attrChanges);
 
             expect(providerSpy.sayWelcome.calledOnce).toBeTrue();
-            expect(providerSpy.sayWelcome.getCall(0).args[0]).toEqual(changes);
+            expect(providerSpy.sayWelcome.getCall(0).args[0]).toEqual(attrChanges);
+
+            // trigger prop changes
+            (compX as any).list = ['test'];
+
+            const propChanges: IPropChanges = {name: 'list', oldValue: undefined, newValue: ['test']};
+
+            // validate changes
+            expect(componentSpy.onPropChanges.calledOnce).toBeTrue();
+            expect(componentSpy.onPropChanges.getCall(0).args[0]).toEqual(propChanges);
+
+            expect(providerSpy.sayWelcome.calledTwice).toBeTrue();
+            expect(providerSpy.sayWelcome.getCall(1).args[0]).toEqual(propChanges);
 
             // remove the element to trigger onDestroy
             (compX as HTMLElement).remove();
@@ -434,18 +457,24 @@ describe('Runtime functions', () => {
         }, 0);
     });
 
-    it('mismatched attr - propertyKey pairs should throw error', () => {
-        pending('Exception thrown by method can not be caught by Jasmine and causes all tests fail');
-
+    it('should assign props correctly', () => {
         const componentConfig: IComponentConfig = {
-            selector: 'my-test-comp',
-            template: '<div>My Test Comp</div>'
+            selector: 'my-prop-assign-comp',
+            template: '<div>My Prop Assign Comp</div>',
+            shadow: false
         };
 
         @Component(componentConfig)
-        class C {
-            @Attr()
+        class C implements IOnPropChanges {
+            @Prop()
             private test!: string;
+
+            @Prop()
+            private arr!: string[];
+
+            onPropChanges(changes?: IPropChanges) {
+                //
+            }
         }
 
         @Module({
@@ -456,19 +485,43 @@ describe('Runtime functions', () => {
 
         bootstrap(M);
         // add to DOM
-        document.body.insertAdjacentHTML('beforeend', '<div><my-test-comp index="0"></my-test-comp></div>');
+        document.body.insertAdjacentHTML('beforeend', '<my-prop-assign-comp></my-prop-assign-comp>');
+
+        const componentSpy = sandbox.spy(C.prototype);
+
+        const elementInDom = document.querySelector(componentConfig.selector);
+        (elementInDom as any).test = 'test';
+
+        expect(componentSpy.onPropChanges.calledOnce).toBeTrue();
+        expect(componentSpy.onPropChanges.getCall(0).args[0]).toEqual({
+            name: 'test',
+            oldValue: undefined,
+            newValue: 'test'
+        });
+
+        (elementInDom as any).arr = ['test'];
+
+        expect(componentSpy.onPropChanges.calledTwice).toBeTrue();
+        console.log(...componentSpy.onPropChanges.getCall(0).args);
+        console.log(...componentSpy.onPropChanges.getCall(1).args);
+        expect(componentSpy.onPropChanges.getCall(1).args[0]).toEqual({
+            name: 'arr',
+            oldValue: undefined,
+            newValue: ['test']
+        });
     });
 
     it('onAttrChanges() should not be triggered if there is no component attr', () => {
         const componentConfig: IComponentConfig = {
             selector: 'no-attr-comp',
-            template: '<div>No Attr Comp</div>'
+            template: '<div>No Attr Comp</div>',
+            shadow: false
         };
 
         @Component(componentConfig)
         class C implements IOnAttrChanges {
             onAttrChanges(changes?: IAttrChanges) {
-                console.log('on changes called', changes);
+                //
             }
         }
 
@@ -487,47 +540,83 @@ describe('Runtime functions', () => {
         expect(componentSpy.onAttrChanges.callCount).toEqual(0);
     });
 
+    it('onPropChanges() should not be triggered if there is no component prop', () => {
+        const componentConfig: IComponentConfig = {
+            selector: 'no-prop-comp',
+            template: '<div>No Prop Comp</div>',
+            shadow: false
+        };
+
+        @Component(componentConfig)
+        class C implements IOnPropChanges {
+            onPropChanges(changes?: IAttrChanges) {
+                //
+            }
+        }
+
+        @Module({
+            components: [C],
+            providers: []
+        })
+        class M {}
+
+        bootstrap(M);
+
+        const componentSpy = sandbox.spy(C.prototype);
+        // add to DOM
+        document.body.insertAdjacentHTML('beforeend', '<div><no-prop-comp></no-prop-comp></div>');
+
+        expect(componentSpy.onPropChanges.callCount).toEqual(0);
+    });
+
+    it('should not trigger onAttrChanges() and / or onPropChanges() if the changed attr / prop is not listened in component', () => {
+        // todo
+    });
+
     it('nested component initiations should be from outer to inner', (done) => {
         const innerConfig: IComponentConfig = {
             selector: 'comp-inner',
-            template: '<div>Inner Comp</div>'
+            template: '<div>Inner Comp</div>',
+            shadow: false
         };
         const middleConfig: IComponentConfig = {
             selector: 'comp-middle',
-            template: '<div><comp-inner></comp-inner></div>'
+            template: '<div><comp-inner></comp-inner></div>',
+            shadow: false
         };
         const outerConfig: IComponentConfig = {
             selector: 'comp-outer',
-            template: '<div><comp-middle></comp-middle></div>'
+            template: '<div><comp-middle></comp-middle></div>',
+            shadow: false
         };
 
         @Component(innerConfig)
         class CInner implements IOnInit, IOnDestroy {
             onInit() {
-                console.log('inner:on init called');
+                //
             }
             onDestroy() {
-                console.log('inner:on destroy called');
+                //
             }
         }
 
         @Component(middleConfig)
         class CMiddle implements IOnInit, IOnDestroy {
             onInit() {
-                console.log('middle:on init called');
+                //
             }
             onDestroy() {
-                console.log('middle:on destroy called');
+                //
             }
         }
 
         @Component(outerConfig)
         class COuter implements IOnInit, IOnDestroy {
             onInit() {
-                console.log('outer:on init called');
+                //
             }
             onDestroy() {
-                console.log('outer:on destroy called');
+                //
             }
         }
 
@@ -576,7 +665,8 @@ describe('Runtime functions', () => {
     it('component instances for same components with different usage should be isolated ', (done) => {
         const config: IComponentConfig = {
             selector: 'isolated-comp',
-            template: '<div></div>'
+            template: '<div></div>',
+            shadow: false
         };
 
         @Component(config)
@@ -585,15 +675,15 @@ describe('Runtime functions', () => {
             private index!: string;
 
             onAttrChanges(changes: IAttrChanges) {
-                console.log('changes', changes, 'index', this.getIndex());
+                this.getIndex();
             }
 
             onInit() {
-                console.log('inner:on init called', this.getIndex());
+                this.getIndex();
             }
 
             onDestroy() {
-                console.log('inner:on destroy called');
+                //
             }
 
             getIndex(): string {
@@ -653,20 +743,306 @@ describe('Runtime functions', () => {
     });
 
     it('attr field types should be converted correctly', () => {
-        // todo
+        const config: IComponentConfig = {
+            selector: 'attr-test-comp',
+            template: '<div></div>',
+            shadow: false
+        };
+
+        @Component(config)
+        class C implements IOnAttrChanges {
+            @Attr()
+            private index!: number;
+
+            onAttrChanges(changes: IAttrChanges) {
+                //
+            }
+
+            getIndex() {
+                return this.index;
+            }
+        }
+
+        @Module({
+            components: [C],
+            providers: []
+        })
+        class M {}
+
+        bootstrap(M);
+
+        const componentSpy = sandbox.spy(C.prototype);
+
+        document.body.insertAdjacentHTML('beforeend', `<div><attr-test-comp index="0"></attr-test-comp></div>`);
+
+        const componentInDOM: HTMLElement | null = document.querySelector('attr-test-comp');
+        (componentInDOM as HTMLElement).setAttribute('index', '1');
+
+        expect(componentSpy.onAttrChanges.calledOnce).toBeTrue();
+        expect(componentSpy.onAttrChanges.getCall(0).args[0]).toEqual({
+            name: 'index',
+            oldValue: 0,
+            newValue: 1
+        });
     });
 
-    it('view children should be assigned correctly', () => {
-        // todo
+    it('view container should be assigned correctly', (done) => {
+        const config: IComponentConfig = {
+            selector: 'view-container-test-comp',
+            template: '<div></div>',
+            shadow: false
+        };
+
+        @Component(config)
+        class C implements IOnViewInit {
+            @ViewContainer()
+            hostElement!: HTMLElement;
+
+            onViewInit() {
+                this.appendContentToHostElement();
+            }
+
+            appendContentToHostElement() {
+                const testDiv = document.createElement('div');
+                testDiv.className = 'test';
+                this.hostElement?.appendChild(testDiv);
+            }
+        }
+
+        @Module({
+            components: [C],
+            providers: []
+        })
+        class M {}
+
+        bootstrap(M);
+
+        const componentSpy = sandbox.spy(C.prototype);
+
+        document.body.insertAdjacentHTML('beforeend', `<view-container-test-comp></view-container-test-comp>`);
+
+        setTimeout(() => {
+            expect(componentSpy.onViewInit.calledOnce).toBeTrue();
+            const componentInDOM: HTMLElement | null = document.querySelector(config.selector);
+            const testDiv = componentInDOM?.querySelector('.test');
+            expect(testDiv).toBeTruthy();
+            done();
+        }, 200);
     });
 
-    it('event listeners should be set correctly', () => {
-        // todo
+    it('view children should be assigned correctly', (done) => {
+        const config: IComponentConfig = {
+            selector: 'view-children-test-comp',
+            template: `
+              <div class="test">
+                <span class="test-many"></span>
+                <span class="test-many"></span>
+                <span class="test-many"></span>
+              </div>
+            `,
+            shadow: false
+        };
+
+        @Component(config)
+        class C implements IOnViewInit {
+            @ViewChild('.test')
+            testChild!: HTMLElement;
+
+            @ViewChild('.test-many')
+            testChildren!: HTMLElement[];
+
+            @ViewChild('.does-not-exist')
+            doesNotExistChild!: HTMLElement | null;
+
+            onViewInit() {
+                this.getTestChild();
+                this.getTestChildren();
+                this.getDoesNotExistChild();
+            }
+
+            getTestChild() {
+                return this.testChild;
+            }
+
+            getTestChildren() {
+                return this.testChildren;
+            }
+
+            getDoesNotExistChild() {
+                return this.doesNotExistChild;
+            }
+        }
+
+        @Module({
+            components: [C],
+            providers: []
+        })
+        class M {}
+
+        bootstrap(M);
+
+        const componentSpy = sandbox.spy(C.prototype);
+
+        document.body.insertAdjacentHTML('beforeend', `<view-children-test-comp></view-children-test-comp>`);
+
+        setTimeout(() => {
+            expect(componentSpy.getTestChild.calledOnce).toBeTrue();
+            expect(componentSpy.getTestChildren.calledOnce).toBeTrue();
+            expect(componentSpy.getDoesNotExistChild.calledOnce).toBeTrue();
+
+            const componentInDOM: HTMLElement | null = document.querySelector(config.selector);
+            const child = componentInDOM?.querySelector('.test');
+            const children = componentInDOM?.querySelectorAll('.test-many');
+
+            expect(componentSpy.getTestChild.getCall(0).returnValue).toEqual(child as HTMLElement);
+
+            expect(componentSpy.getTestChildren.getCall(0).returnValue).toEqual(
+                Array.from(children as NodeListOf<HTMLElement>)
+            );
+            expect(componentSpy.getDoesNotExistChild.getCall(0).returnValue).toEqual(null);
+
+            done();
+        }, 200);
     });
 
-    // todo : test lc methods on replacing existing wc - here
+    it('event listeners should be set correctly', (done) => {
+        const config: IComponentConfig = {
+            selector: 'event-listener-test-comp',
+            template: `<button class="test"></button><button class="test2"></button>`,
+            shadow: false
+        };
 
-    // todo : test only attr changes
+        @Component(config)
+        class C {
+            @Listen('click', '.test')
+            onClick(event: Event, element: HTMLElement) {
+                return element;
+            }
 
-    // todo : test prop changes
+            @Listen('click', '.test2', () => false)
+            dontListenClick() {
+                return 'no callback';
+            }
+
+            @Listen('click')
+            hostClickListener() {
+                return 'host listener';
+            }
+        }
+
+        @Module({
+            components: [C],
+            providers: []
+        })
+        class M {}
+
+        bootstrap(M);
+
+        const componentSpy = sandbox.spy(C.prototype);
+
+        document.body.insertAdjacentHTML('beforeend', `<event-listener-test-comp></event-listener-test-comp>`);
+
+        setTimeout(() => {
+            const componentInDOM: HTMLElement | null = document.querySelector(config.selector);
+            componentInDOM?.click();
+            expect(componentSpy.hostClickListener.callCount).toEqual(1);
+            expect(componentSpy.hostClickListener.getCall(0).returnValue).toEqual('host listener');
+
+            const child = componentInDOM?.querySelector('.test');
+            (child as HTMLButtonElement)?.click();
+            expect(componentSpy.onClick.callCount).toEqual(1);
+            expect(componentSpy.onClick.getCall(0).returnValue).toEqual(child as HTMLElement);
+
+            const child2 = componentInDOM?.querySelector('.test2');
+            (child2 as HTMLButtonElement)?.click();
+            expect(componentSpy.dontListenClick.callCount).toEqual(0);
+
+            done();
+        }, 200);
+    });
+
+    it('should add the styles correctly based on shadow flag', (done) => {
+        const config1: IComponentConfig = {
+            selector: 'style-test-comp',
+            template: '<div class="test"></div>',
+            shadow: false,
+            styles: [
+                `
+                .test {
+                    background-color: rgb(255, 255, 255);
+                }
+                `
+            ]
+        };
+
+        const config2: IComponentConfig = {
+            selector: 'style-test-shadow-comp',
+            template: '<div class="test"></div>',
+            shadow: true,
+            styles: [
+                `
+                    .test {
+                        background-color: rgb(0, 0, 0);
+                    }
+                `
+            ]
+        };
+
+        const config3: IComponentConfig = {
+            selector: 'no-style-test-shadow-comp',
+            template: '<div class="test"></div>',
+            shadow: true,
+            styles: []
+        };
+
+        @Component(config1)
+        class C1 {}
+
+        @Component(config2)
+        class C2 {}
+
+        @Component(config3)
+        class C3 {}
+
+        @Module({
+            components: [C1, C2, C3],
+            providers: []
+        })
+        class M {}
+
+        bootstrap(M);
+
+        document.body.insertAdjacentHTML(
+            'beforeend',
+            `
+          <style-test-comp></style-test-comp>
+          <style-test-shadow-comp></style-test-shadow-comp>
+          <no-style-test-shadow-comp></no-style-test-shadow-comp>
+        `
+        );
+
+        setTimeout(() => {
+            const component1InDOM: HTMLElement | null = document.querySelector(config1.selector);
+            const component2InDOM: HTMLElement | null = document.querySelector(config2.selector);
+            const component3InDOM: HTMLElement | null = document.querySelector(config3.selector);
+
+            const child1 = component1InDOM?.querySelector('.test');
+            const style1 = component1InDOM?.querySelector('style');
+            expect(style1).toBeTruthy();
+            expect(window.getComputedStyle(child1 as HTMLElement).backgroundColor).toEqual('rgb(255, 255, 255)');
+
+            const child2 = component2InDOM?.shadowRoot?.querySelector('.test');
+            const style2 = component2InDOM?.shadowRoot?.querySelector('style');
+            expect(child2).toBeTruthy();
+            expect(style2).toBeTruthy();
+            expect(window.getComputedStyle(child2 as HTMLElement).backgroundColor).toEqual('rgb(0, 0, 0)');
+
+            const child3 = component3InDOM?.shadowRoot?.querySelector('.test');
+            const style3 = component3InDOM?.shadowRoot?.querySelector('style');
+            expect(child3).toBeTruthy();
+            expect(style3).toBeFalsy();
+
+            done();
+        }, 200);
+    });
 });

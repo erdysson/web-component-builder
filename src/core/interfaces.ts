@@ -34,8 +34,8 @@ export interface IComponentConfig {
 
 export interface IAttrChanges {
     name: string;
-    oldValue: string | null;
-    newValue: string | null;
+    oldValue: any;
+    newValue: any;
 }
 
 export interface IPropChanges {
