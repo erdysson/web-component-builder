@@ -5,11 +5,11 @@ import {
     Class,
     Component,
     IComponentConfig,
-    Injectable,
     Listen,
     Module,
     ViewChild,
-    ViewContainer
+    ViewContainer,
+    ViewEncapsulation
 } from '../../src';
 import {Metadata} from '../../src/core/metadata';
 
@@ -18,7 +18,7 @@ describe('Decorator functions', () => {
     const componentConfig: IComponentConfig = {
         selector: 'a-selector',
         template: '<div>a-template</div>',
-        shadow: false,
+        viewEncapsulation: ViewEncapsulation.NONE,
         styles: []
     };
     // sandbox for sinon related ops
@@ -142,7 +142,7 @@ describe('Decorator functions', () => {
             const componentConfig: IComponentConfig = {
                 selector: 'comp-with-child-selector1',
                 template: '<div>Template 1</div>',
-                shadow: false,
+                viewEncapsulation: ViewEncapsulation.NONE,
                 styles: []
             };
 
@@ -204,7 +204,7 @@ describe('Decorator functions', () => {
             const componentConfig: IComponentConfig = {
                 selector: 'comp-with-child-selector1',
                 template: '<div>Template 1</div>',
-                shadow: false,
+                viewEncapsulation: ViewEncapsulation.NONE,
                 styles: []
             };
 
@@ -213,12 +213,12 @@ describe('Decorator functions', () => {
             @Component(componentConfig)
             class C {
                 @Listen('click')
-                rootClickListener(event: Event) {
+                rootClickListener() {
                     //
                 }
 
                 @Listen('click', '.child', predicate)
-                childClickListener(event: Event): void {
+                childClickListener(): void {
                     //
                 }
             }

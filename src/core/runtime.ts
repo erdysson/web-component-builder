@@ -1,4 +1,5 @@
 import {CustomElementState, ICustomElement} from './custom-element-interfaces';
+import {ViewEncapsulation} from './enums';
 import {Class, IModuleConfig} from './interfaces';
 import {Metadata} from './metadata';
 import {IEventListenerMetadata, IViewChildMetadata} from './metadata-interfaces';
@@ -52,7 +53,7 @@ export class Runtime {
             const customElementClass = this.getCustomElementClass(
                 attrs,
                 props,
-                config.shadow,
+                config.viewEncapsulation,
                 config.styles || [],
                 viewContainer,
                 viewChildren,
@@ -67,7 +68,7 @@ export class Runtime {
     getCustomElementClass(
         attrs: string[],
         props: string[],
-        shadowDOM: boolean,
+        viewEncapsulation: ViewEncapsulation = ViewEncapsulation.NONE,
         styles: string[],
         viewContainer: string,
         viewChildren: IViewChildMetadata[],
@@ -194,7 +195,7 @@ export class Runtime {
             private insertContent(): void {
                 // setTimeout is required because of the execution order of onInit() calls
                 setTimeout(() => {
-                    if (shadowDOM) {
+                    if (viewEncapsulation) {
                         const shadow = this.attachShadow({mode: 'open'});
                         if (styles.length) {
                             const style = document.createElement('style');

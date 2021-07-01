@@ -18,7 +18,8 @@ import {
     Module,
     Prop,
     ViewChild,
-    ViewContainer
+    ViewContainer,
+    ViewEncapsulation
 } from '../../src';
 import {Runtime} from '../../src/core/runtime';
 
@@ -55,13 +56,13 @@ describe('Runtime functions', () => {
         const componentConfig1: IComponentConfig = {
             selector: 'comp-1',
             template: '<div>Component 1</div>',
-            shadow: false
+            viewEncapsulation: ViewEncapsulation.NONE
         };
 
         const componentConfig2: IComponentConfig = {
             selector: 'comp-2',
             template: '<div>Component 2</div>',
-            shadow: false
+            viewEncapsulation: ViewEncapsulation.NONE
         };
 
         @Component(componentConfig1)
@@ -93,13 +94,13 @@ describe('Runtime functions', () => {
         const componentConfigA: IComponentConfig = {
             selector: 'comp-a',
             template: '<div>Component A</div>',
-            shadow: false
+            viewEncapsulation: ViewEncapsulation.NONE
         };
 
         const componentConfigB: IComponentConfig = {
             selector: 'comp-b',
             template: '<div>Component B</div>',
-            shadow: false
+            viewEncapsulation: ViewEncapsulation.NONE
         };
 
         @Injectable()
@@ -148,7 +149,7 @@ describe('Runtime functions', () => {
         @Component({
             selector: 'test-c',
             template: '<div>Test C</div>',
-            shadow: false
+            viewEncapsulation: ViewEncapsulation.NONE
         })
         class C {
             constructor(private p3: P3) {}
@@ -195,7 +196,7 @@ describe('Runtime functions', () => {
         @Component({
             selector: 'test-c12',
             template: '<div>Test C</div>',
-            shadow: false
+            viewEncapsulation: ViewEncapsulation.NONE
         })
         class C {
             constructor(private p3: P3) {}
@@ -229,7 +230,7 @@ describe('Runtime functions', () => {
         @Component({
             selector: 'provider-test-exception-comp',
             template: '<div>XYZ</div>',
-            shadow: false
+            viewEncapsulation: ViewEncapsulation.NONE
         })
         class C {
             constructor(private p1: P1) {}
@@ -274,7 +275,7 @@ describe('Runtime functions', () => {
         @Component({
             selector: 'my-comp',
             template: '<div>my comp</div>',
-            shadow: false
+            viewEncapsulation: ViewEncapsulation.NONE
         })
         class C {
             constructor(private p2: P2, private p4: P4) {}
@@ -298,7 +299,7 @@ describe('Runtime functions', () => {
         const componentConfigTest: IComponentConfig = {
             selector: 'comp-test',
             template: '<div>Component Test</div>',
-            shadow: false
+            viewEncapsulation: ViewEncapsulation.NONE
         };
 
         @Component(componentConfigTest)
@@ -347,7 +348,7 @@ describe('Runtime functions', () => {
         const componentConfigX: IComponentConfig = {
             selector: 'comp-x',
             template: '<div>Component X</div>',
-            shadow: false
+            viewEncapsulation: ViewEncapsulation.NONE
         };
 
         @Component(componentConfigX)
@@ -461,7 +462,7 @@ describe('Runtime functions', () => {
         const componentConfig: IComponentConfig = {
             selector: 'my-prop-assign-comp',
             template: '<div>My Prop Assign Comp</div>',
-            shadow: false
+            viewEncapsulation: ViewEncapsulation.NONE
         };
 
         @Component(componentConfig)
@@ -513,7 +514,7 @@ describe('Runtime functions', () => {
         const componentConfig: IComponentConfig = {
             selector: 'no-attr-comp',
             template: '<div>No Attr Comp</div>',
-            shadow: false
+            viewEncapsulation: ViewEncapsulation.NONE
         };
 
         @Component(componentConfig)
@@ -542,7 +543,7 @@ describe('Runtime functions', () => {
         const componentConfig: IComponentConfig = {
             selector: 'no-prop-comp',
             template: '<div>No Prop Comp</div>',
-            shadow: false
+            viewEncapsulation: ViewEncapsulation.NONE
         };
 
         @Component(componentConfig)
@@ -575,17 +576,17 @@ describe('Runtime functions', () => {
         const innerConfig: IComponentConfig = {
             selector: 'comp-inner',
             template: '<div>Inner Comp</div>',
-            shadow: false
+            viewEncapsulation: ViewEncapsulation.NONE
         };
         const middleConfig: IComponentConfig = {
             selector: 'comp-middle',
             template: '<div><comp-inner></comp-inner></div>',
-            shadow: false
+            viewEncapsulation: ViewEncapsulation.NONE
         };
         const outerConfig: IComponentConfig = {
             selector: 'comp-outer',
             template: '<div><comp-middle></comp-middle></div>',
-            shadow: false
+            viewEncapsulation: ViewEncapsulation.NONE
         };
 
         @Component(innerConfig)
@@ -664,7 +665,7 @@ describe('Runtime functions', () => {
         const config: IComponentConfig = {
             selector: 'isolated-comp',
             template: '<div></div>',
-            shadow: false
+            viewEncapsulation: ViewEncapsulation.NONE
         };
 
         @Component(config)
@@ -744,7 +745,7 @@ describe('Runtime functions', () => {
         const config: IComponentConfig = {
             selector: 'attr-test-comp',
             template: '<div></div>',
-            shadow: false
+            viewEncapsulation: ViewEncapsulation.NONE
         };
 
         @Component(config)
@@ -788,7 +789,7 @@ describe('Runtime functions', () => {
         const config: IComponentConfig = {
             selector: 'view-container-test-comp',
             template: '<div></div>',
-            shadow: false
+            viewEncapsulation: ViewEncapsulation.NONE
         };
 
         @Component(config)
@@ -838,7 +839,7 @@ describe('Runtime functions', () => {
                 <span class="test-many"></span>
               </div>
             `,
-            shadow: false
+            viewEncapsulation: ViewEncapsulation.NONE
         };
 
         @Component(config)
@@ -907,7 +908,7 @@ describe('Runtime functions', () => {
         const config: IComponentConfig = {
             selector: 'event-listener-test-comp',
             template: `<button class="test"></button><button class="test2"></button>`,
-            shadow: false
+            viewEncapsulation: ViewEncapsulation.NONE
         };
 
         @Component(config)
@@ -963,7 +964,7 @@ describe('Runtime functions', () => {
         const config1: IComponentConfig = {
             selector: 'style-test-comp',
             template: '<div class="test"></div>',
-            shadow: false,
+            viewEncapsulation: ViewEncapsulation.NONE,
             styles: [
                 `
                 .test {
@@ -976,7 +977,7 @@ describe('Runtime functions', () => {
         const config2: IComponentConfig = {
             selector: 'style-test-shadow-comp',
             template: '<div class="test"></div>',
-            shadow: true,
+            viewEncapsulation: ViewEncapsulation.SHADOW_DOM,
             styles: [
                 `
                     .test {
@@ -989,7 +990,7 @@ describe('Runtime functions', () => {
         const config3: IComponentConfig = {
             selector: 'no-style-test-shadow-comp',
             template: '<div class="test"></div>',
-            shadow: true,
+            viewEncapsulation: ViewEncapsulation.SHADOW_DOM,
             styles: []
         };
 

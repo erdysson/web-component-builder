@@ -1,7 +1,6 @@
+import {ViewEncapsulation} from './enums';
 // eslint-disable-next-line @typescript-eslint/ban-types
 export interface Class<TClass extends {} = {}> extends Function {
-    // <TParam extends Class>(...args: TParam[]): TClass;
-    // new <TParam extends Class>(...args: TParam[]): TClass;
     new (...args: any[]): TClass;
 }
 
@@ -28,7 +27,7 @@ export interface IModuleConfig {
 export interface IComponentConfig {
     selector: string;
     template: string;
-    shadow: boolean;
+    viewEncapsulation?: ViewEncapsulation;
     styles?: string[];
 }
 
