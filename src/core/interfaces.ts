@@ -34,14 +34,14 @@ export interface IComponentConfig {
 
 export interface IAttrChanges {
     name: string;
-    oldValue: any;
-    newValue: any;
+    oldValue: unknown;
+    newValue: unknown;
 }
 
 export interface IPropChanges {
     name: string;
-    oldValue: any;
-    newValue: any;
+    oldValue: unknown;
+    newValue: unknown;
 }
 
 export interface IOnAttrChanges {

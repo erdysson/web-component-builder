@@ -502,8 +502,6 @@ describe('Runtime functions', () => {
         (elementInDom as any).arr = ['test'];
 
         expect(componentSpy.onPropChanges.calledTwice).toBeTrue();
-        console.log(...componentSpy.onPropChanges.getCall(0).args);
-        console.log(...componentSpy.onPropChanges.getCall(1).args);
         expect(componentSpy.onPropChanges.getCall(1).args[0]).toEqual({
             name: 'arr',
             oldValue: undefined,

@@ -4,7 +4,7 @@ import {Metadata} from './metadata';
 import {IEventListenerMetadata, IViewChildMetadata} from './metadata-interfaces';
 
 export class Runtime {
-    private readonly providerInstanceMap: WeakMap<Class, any> = new WeakMap<Class, any>();
+    private readonly providerInstanceMap: WeakMap<Class, unknown> = new WeakMap<Class, unknown>();
 
     private moduleConfig!: IModuleConfig;
 
@@ -14,7 +14,7 @@ export class Runtime {
         this.registerRuntimeWebComponents(components);
     }
 
-    getConstructorParamsFor(hostClass: Class): any[] {
+    getConstructorParamsFor(hostClass: Class): unknown[] {
         const params = Metadata.getConstructorParams(hostClass);
         // init providers that are used in component(s)
         return params.map((providerClass: Class) => {
@@ -117,7 +117,7 @@ export class Runtime {
                 }
             }
 
-            propertyChangedCallback(name: string, oldValue: any, newValue: any): void {
+            propertyChangedCallback(name: string, oldValue: unknown, newValue: unknown): void {
                 // reflect property value changes to the mapped instance
                 this.mappedInstance[name] = newValue;
                 this.mappedInstance.onPropChanges?.bind(this.mappedInstance)({
@@ -138,9 +138,7 @@ export class Runtime {
             }
 
             private defineProperties(context: ICustomElement): void {
-                props.forEach((prop) => buildProperty(context, prop));
-
-                function buildProperty(context: any, prop: string) {
+                props.forEach((prop) => {
                     Object.defineProperty(context, prop, {
                         get: function () {
                             return this[`_${prop}`];
@@ -150,7 +148,7 @@ export class Runtime {
                             this[`_${prop}`] = value;
                         }
                     });
-                }
+                });
             }
 
             private assignPropertyValues(): void {

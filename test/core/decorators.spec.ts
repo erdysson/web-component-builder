@@ -213,13 +213,13 @@ describe('Decorator functions', () => {
             @Component(componentConfig)
             class C {
                 @Listen('click')
-                rootClickListener(event: Event): void {
-                    console.log('event', event);
+                rootClickListener(event: Event) {
+                    //
                 }
 
                 @Listen('click', '.child', predicate)
                 childClickListener(event: Event): void {
-                    console.log('child event', event);
+                    //
                 }
             }
 
