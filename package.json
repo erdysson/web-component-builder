@@ -1,6 +1,6 @@
 {
   "name": "web-component-builder",
-  "version": "1.0.6-rc.0",
+  "version": "1.0.7-rc.0",
   "description": "Web Component Builder with typescript decorators",
   "author": "Erdi Taner Goekalp",
   "keywords": [
@@ -49,7 +49,7 @@
     "fix": "run-s fix:*",
     "tsc:build": "tsc -p src/tsconfig.json",
     "tsc:build:watch": "tsc -p src/tsconfig.json -w",
-    "rollup:bundle": "rollup -c rollup.config.js -w",
+    "rollup:bundle": "rollup -c rollup.config.js",
     "lib:test": "karma start",
     "lib:build": "npm run tsc:build && npm run rollup:bundle",
     "lib:build:watch": "npm run tsc:build && npm run rollup:bundle -- -w",
