@@ -11,7 +11,7 @@
     "composite": true,
     "noImplicitAny": true,
     "moduleResolution": "node",
-    "typeRoots": ["../node_modules/@types", "types"],
+    "typeRoots": ["../node_modules/@types"],
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "resolveJsonModule": true,
