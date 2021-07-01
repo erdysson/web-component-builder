@@ -1,11 +1,11 @@
-import {Component, IOnInit, Prop} from 'web-component-builder';
+import {Component, IOnInit, Prop, ViewEncapsulation} from 'web-component-builder';
 
 import {App2Service} from '../services/app2.service';
 
 @Component({
     selector: 'app-test',
     template: '<div>App Test</div>',
-    shadow: true,
+    viewEncapsulation: ViewEncapsulation.SHADOW_DOM,
     styles: [
         `
             :host {

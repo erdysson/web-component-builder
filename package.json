@@ -1,6 +1,6 @@
 {
   "name": "web-component-builder",
-  "version": "1.0.7-rc.0",
+  "version": "1.0.8-rc.0",
   "description": "Web Component Builder with typescript decorators",
   "author": "Erdi Taner Goekalp",
   "keywords": [
@@ -39,7 +39,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "pretty-quick --staged"
+      "pre-commit": "npm run fix:prettier && npm run lint"
     }
   },
   "scripts": {
@@ -50,54 +50,52 @@
     "tsc:build": "tsc -p src/tsconfig.json",
     "tsc:build:watch": "tsc -p src/tsconfig.json -w",
     "rollup:bundle": "rollup -c rollup.config.js",
+    "rollup:bundle:watch": "rollup -c rollup.config.js -w",
     "lib:test": "karma start",
     "lib:build": "npm run tsc:build && npm run rollup:bundle",
-    "lib:build:watch": "npm run tsc:build && npm run rollup:bundle -- -w",
     "lib:link": "cd lib && npm link web-component-builder",
     "lib:unlink": "cd lib && npm unlink web-component-builder"
   },
   "dependencies": {
-    "@babel/runtime": "^7.13.10",
+    "@babel/runtime": "^7.14.6",
     "reflect-metadata": "^0.1.13"
   },
   "peerDependencies": {},
   "devDependencies": {
-    "@babel/core": "^7.13.13",
-    "@babel/plugin-transform-runtime": "^7.13.10",
-    "@babel/preset-env": "^7.13.12",
+    "@babel/core": "^7.14.6",
+    "@babel/plugin-transform-runtime": "^7.14.5",
+    "@babel/preset-env": "^7.14.7",
     "@rollup/plugin-babel": "^5.3.0",
-    "@types/jasmine": "^3.6.9",
-    "@types/node": "^14.14.37",
-    "@types/sinon": "^9.0.11",
-    "@typescript-eslint/eslint-plugin": "^4.21.0",
-    "@typescript-eslint/parser": "^4.21.0",
-    "codecov": "^3.8.1",
-    "eslint": "^7.23.0",
+    "@types/jasmine": "^3.7.7",
+    "@types/node": "^15.12.5",
+    "@types/sinon": "^10.0.2",
+    "@typescript-eslint/eslint-plugin": "^4.28.1",
+    "@typescript-eslint/parser": "^4.28.1",
+    "codecov": "^3.8.2",
+    "eslint": "^7.29.0",
     "eslint-plugin-eslint-comments": "^3.2.0",
-    "eslint-plugin-import": "^2.22.1",
-    "eslint-plugin-prettier": "^3.3.1",
-    "husky": "^6.0.0",
+    "eslint-plugin-import": "^2.23.4",
+    "eslint-plugin-prettier": "^3.4.0",
+    "husky": "^7.0.0",
     "jasmine-core": "^3.7.1",
-    "karma": "^6.3.2",
+    "karma": "^6.3.4",
     "karma-chrome-launcher": "^3.1.0",
     "karma-cli": "^2.0.0",
     "karma-coverage": "^2.0.3",
     "karma-jasmine": "^4.0.1",
-    "karma-mocha": "^2.0.1",
     "karma-spec-reporter": "0.0.32",
     "karma-typescript": "^5.5.1",
-    "node-sass": "^5.0.0",
     "npm-run-all": "^4.1.5",
-    "prettier": "^2.2.1",
-    "pretty-quick": "^3.1.0",
-    "rollup": "^2.45.0",
+    "prettier": "^2.3.2",
+    "pretty-quick": "^3.1.1",
+    "rollup": "^2.52.6",
     "rollup-plugin-bundle-size": "^1.0.3",
     "rollup-plugin-commonjs": "^10.1.0",
     "rollup-plugin-node-resolve": "^5.2.0",
     "rollup-plugin-typescript2": "^0.30.0",
-    "sinon": "^10.0.0",
-    "ts-node": "^9.1.1",
-    "tslib": "^2.2.0",
-    "typescript": "^4.2.4"
+    "sinon": "^11.1.1",
+    "ts-node": "^10.0.0",
+    "tslib": "^2.3.0",
+    "typescript": "^4.3.5"
   }
 }

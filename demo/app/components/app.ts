@@ -1,4 +1,13 @@
-import {Attr, Component, IOnInit, Listen, Prop, ViewChild, ViewContainer} from 'web-component-builder';
+import {
+    Attr,
+    Component,
+    IOnInit,
+    Listen,
+    Prop,
+    ViewChild,
+    ViewContainer,
+    ViewEncapsulation
+} from 'web-component-builder';
 
 import {AppService} from '../services/app.service';
 import {App2Service} from '../services/app2.service';
@@ -11,7 +20,7 @@ import {App2Service} from '../services/app2.service';
             <app-test></app-test>
         </div>
     `,
-    shadow: false,
+    viewEncapsulation: ViewEncapsulation.NONE,
     styles: [
         `
             app-main {
