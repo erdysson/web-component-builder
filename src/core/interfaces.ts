@@ -4,9 +4,6 @@ export interface Class<TClass extends {} = {}> extends Function {
     new (...args: any[]): TClass;
 }
 
-// eslint-disable-next-line @typescript-eslint/ban-types
-export type InstanceOf<T extends {} = {}> = T;
-
 export interface IClassDecorator {
     (target: Class): void;
 }
