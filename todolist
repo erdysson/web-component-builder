@@ -1,10 +1,11 @@
 todo list
-0 - fix ie for styles
-1 - clear README
-2 - template loader? jsx?
+0 - router
+1 - provider types
+2 - module isolation
+3 - module with config
 
-todo others
-
-0 - ts project starter
-1 - cli tool ?
-2 - router project
+4 - fix ie for styles
+5 - clear README
+6 - template and styles ?
+7 - cli ?
+8 - project starter ?

@@ -17,8 +17,11 @@ export interface IMethodDecorator {
 }
 
 export interface IModuleConfig {
+    imports?: Class[];
     components: Class[];
     providers: Class[];
+    declarations?: Class[];
+    exports?: Class[];
 }
 
 export interface IComponentConfig {

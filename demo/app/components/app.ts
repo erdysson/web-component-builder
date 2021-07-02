@@ -4,6 +4,7 @@ import {
     IOnInit,
     Listen,
     Prop,
+    RouterService,
     ViewChild,
     ViewContainer,
     ViewEncapsulation
@@ -17,7 +18,10 @@ import {App2Service} from '../services/app2.service';
     template: `
         <div>
             <h2>App Main</h2>
+            <button type="button" class="navigate-test">Navigate to test</button>
+            <button type="button" class="navigate-app">Navigate to app</button>
             <app-test></app-test>
+            <router-component></router-component>
         </div>
     `,
     viewEncapsulation: ViewEncapsulation.NONE,
@@ -58,12 +62,22 @@ export class App implements IOnInit {
     @ViewContainer()
     hostElement!: HTMLElement;
 
-    constructor(private readonly app2: App2Service, private readonly app: AppService) {}
+    constructor(
+        private readonly router: RouterService,
+        private readonly app2: App2Service,
+        private readonly app: AppService
+    ) {}
 
-    @Listen('click')
-    onClick(event: MouseEvent): void {
-        console.log('event', event);
-        this.logThis();
+    @Listen('click', '.navigate-test')
+    onClickTest(event: MouseEvent): void {
+        console.log('clicked to navigate test', event);
+        this.router.navigate('/test');
+    }
+
+    @Listen('click', '.navigate-app')
+    onClickApp(event: MouseEvent): void {
+        console.log('clicked to navigate app', event);
+        this.router.navigate('/app');
     }
 
     onInit(): void {
