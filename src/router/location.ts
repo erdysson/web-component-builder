@@ -32,4 +32,11 @@ export class Location {
     onLocationChange(callback: (state?: unknown) => void): void {
         this.locationChangeCallbackQueue.push(callback);
     }
+
+    init(): void {
+        const state = this.history.state;
+        this.locationChangeCallbackQueue.forEach((callback) => {
+            callback(state);
+        });
+    }
 }

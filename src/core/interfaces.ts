@@ -16,12 +16,31 @@ export interface IMethodDecorator {
     (target: any, propertyKey: string, descriptor?: PropertyDescriptor): void;
 }
 
+export interface IParameterDecorator {
+    (target: Class, propertyKey: string, parameterIndex: number): void;
+}
+
+export type IModule = Class | IModuleWithProviders;
+
+export type IProvider = Class | IProviderConfig;
+
+export interface IModuleWithProviders {
+    module: Class;
+    providers: IProvider[];
+}
+
 export interface IModuleConfig {
-    imports?: Class[];
+    imports?: IModule[];
     components: Class[];
-    providers: Class[];
+    providers: IProvider[];
     declarations?: Class[];
-    exports?: Class[];
+    exports?: IProvider[];
+}
+
+export interface IProviderConfig {
+    provide: string;
+    useValue?: unknown;
+    useClass?: Class;
 }
 
 export interface IComponentConfig {

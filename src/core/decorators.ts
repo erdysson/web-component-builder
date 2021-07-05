@@ -4,6 +4,7 @@ import {
     IComponentConfig,
     IMethodDecorator,
     IModuleConfig,
+    IParameterDecorator,
     IPropertyDecorator
 } from './interfaces';
 import {Metadata} from './metadata';
@@ -24,6 +25,17 @@ export const Component =
 export const Injectable = (): IClassDecorator => (target: Class) => {
     //
 };
+
+export const Inject =
+    (token?: string): IParameterDecorator =>
+    (target: Class, propertyKey: string | symbol, parameterIndex: number) => {
+        if (!token) {
+            const paramTypes = (Reflect.getMetadata('design:paramtypes', target) || []) as Class[];
+            const ParamConstructorType = paramTypes[parameterIndex];
+            token = ParamConstructorType.name;
+        }
+        Metadata.setInjectedProviderConfig(target, token, parameterIndex);
+    };
 
 export const Attr =
     (name?: string): IPropertyDecorator =>

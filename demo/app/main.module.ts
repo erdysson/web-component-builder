@@ -1,13 +1,14 @@
 import {Module, RouterModule} from 'web-component-builder';
 
+import {appRoutes} from './app-routes';
 import {App} from './components/app';
-import {Test} from './components/test';
+import {Home} from './components/home';
+import {Profile} from './components/profile';
 import {AppService} from './services/app.service';
-import {App2Service} from './services/app2.service';
 
 @Module({
-    imports: [RouterModule],
-    components: [App, Test],
-    providers: [AppService, App2Service]
+    imports: [RouterModule.withConfig(appRoutes)],
+    components: [App, Home, Profile],
+    providers: [AppService]
 })
 export class MainModule {}

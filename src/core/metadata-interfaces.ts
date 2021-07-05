@@ -1,5 +1,10 @@
 export type PrimitiveTypeConstructor = BooleanConstructor | NumberConstructor;
 
+export interface IInjectMetadata {
+    token: string;
+    parameterIndex: number;
+}
+
 export interface IAttrMetadata {
     [name: string]: {
         propertyKey: string;

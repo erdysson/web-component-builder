@@ -3,6 +3,7 @@ import {Class, IComponentConfig, IModuleConfig} from './interfaces';
 import {
     IAttrMetadata,
     IEventListenerMetadata,
+    IInjectMetadata,
     IPropMetadata,
     IViewChildMetadata,
     PrimitiveTypeConstructor
@@ -24,6 +25,23 @@ export class Metadata {
 
     static getComponentConfig(componentClass: Class): IComponentConfig {
         return Reflect.getMetadata(METADATA_KEYS.COMPONENT, componentClass) as IComponentConfig;
+    }
+
+    static setInjectedProviderConfig(hostClass: Class, token: string, parameterIndex: number): void {
+        const hasMetadata = Reflect.hasMetadata(METADATA_KEYS.INJECT, hostClass);
+        if (!hasMetadata) {
+            Reflect.defineMetadata(METADATA_KEYS.INJECT, [{token, parameterIndex}] as IInjectMetadata[], hostClass);
+        } else {
+            const injectMetadata = Metadata.getInjectedProviderConfig(hostClass);
+            injectMetadata.unshift({
+                token,
+                parameterIndex
+            });
+        }
+    }
+
+    static getInjectedProviderConfig(hostClass: Class): IInjectMetadata[] {
+        return Reflect.getMetadata(METADATA_KEYS.INJECT, hostClass) || [];
     }
 
     static setComponentAttrConfig(componentInstance: any, propertyKey: string, name: string): void {
@@ -146,9 +164,5 @@ export class Metadata {
 
     static getTypeMetadata(target: any, propertyKey: string): PrimitiveTypeConstructor {
         return Reflect.getMetadata('design:type', target, propertyKey);
-    }
-
-    static getConstructorParams(hostClass: Class): Class[] {
-        return (Reflect.getMetadata('design:paramtypes', hostClass) || []) as Class[];
     }
 }

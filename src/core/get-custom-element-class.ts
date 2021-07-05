@@ -116,7 +116,7 @@ export function getCustomElementClass(
         private assignEventListeners(): void {
             eventListener.forEach((eventListenerConfig: IEventListenerMetadata) => {
                 const results: NodeListOf<HTMLElement> = eventListenerConfig.querySelector
-                    ? document.querySelectorAll<HTMLElement>(eventListenerConfig.querySelector)
+                    ? this.querySelectorAll<HTMLElement>(eventListenerConfig.querySelector)
                     : ([this] as unknown as NodeListOf<HTMLElement>);
                 results.forEach((result: HTMLElement) => {
                     if (eventListenerConfig.predicate()) {
