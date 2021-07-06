@@ -1,4 +1,5 @@
 import {getCustomElementClass} from './get-custom-element-class';
+import {Injector} from './injector';
 import {Class, IModule, IModuleConfig, IModuleWithProviders, IProvider, IProviderConfig} from './interfaces';
 import {Metadata} from './metadata';
 import {IInjectMetadata} from './metadata-interfaces';
@@ -35,11 +36,12 @@ export class Context {
         const moduleConfig: IModuleConfig = Metadata.getModuleConfig(moduleClass);
 
         if (!this.runtime.context.has(moduleClass)) {
+            // create root injector first
+            this.runtime.context.set(moduleClass, this);
+
             this.createImportedContexts(moduleConfig);
             this.createInjectors(moduleConfigProviders as IProviderConfig[], moduleConfig);
             this.defineRuntimeWebComponents(moduleConfig);
-
-            this.runtime.context.set(moduleClass, this);
         }
     }
 
@@ -48,13 +50,26 @@ export class Context {
     }
 
     private createInjectors(configProviders: IProviderConfig[], moduleConfig: IModuleConfig): void {
+        // context injector
+        const injectorToken = 'Injector';
+        this.providerInjectors.set(injectorToken, {
+            inject: () => {
+                const rootContext = this.runtime.context.get(this.runtime.rootModule) as Context;
+                if (!this.providers.has(injectorToken)) {
+                    this.providers.set(injectorToken, new Injector(rootContext.providerInjectors));
+                }
+                return this.providers.get(injectorToken);
+            },
+            exported: false
+        });
         // config providers
         configProviders.forEach((providerConfig: IProviderConfig) => {
             this.providerInjectors.set(providerConfig.provide, {
-                injector: () => {
+                inject: () => {
                     if (!this.providers.has(providerConfig.provide)) {
                         this.providers.set(providerConfig.provide, providerConfig.useValue);
                     }
+                    return this.providers.get(providerConfig.provide);
                 },
                 exported: true
             });
@@ -65,11 +80,12 @@ export class Context {
             if (typeof provider === 'function') {
                 injectorToken = provider.name;
                 this.providerInjectors.set(injectorToken, {
-                    injector: () => {
+                    inject: () => {
                         if (!this.providers.has(injectorToken)) {
                             const constructorParams = this.getConstructorParams(provider, moduleConfig);
                             this.providers.set(injectorToken, new provider(...constructorParams));
                         }
+                        return this.providers.get(injectorToken);
                     },
                     exported: (moduleConfig.exports || []).indexOf(provider) > -1
                 });
@@ -77,11 +93,12 @@ export class Context {
                 injectorToken = (provider as IProviderConfig).provide;
                 const ProviderClass = Context.getProviderClass(provider);
                 this.providerInjectors.set(injectorToken, {
-                    injector: () => {
+                    inject: () => {
                         if (!this.providers.has(injectorToken)) {
                             const constructorParams = this.getConstructorParams(ProviderClass, moduleConfig);
                             this.providers.set(injectorToken, new ProviderClass(...constructorParams));
                         }
+                        return this.providers.get(injectorToken);
                     },
                     exported: (moduleConfig.exports || []).indexOf(ProviderClass) > -1
                 });
@@ -95,8 +112,7 @@ export class Context {
             const token = injectMetadata.token;
             if (this.providerInjectors.has(token)) {
                 const injectorConfig = this.providerInjectors.get(token) as IContextProviderInjectorConfig;
-                injectorConfig.injector();
-                return this.providers.get(token);
+                return injectorConfig.inject();
             } else {
                 const imports = moduleConfig.imports || [];
                 let providerInstance: unknown;
@@ -108,8 +124,7 @@ export class Context {
                             token
                         ) as IContextProviderInjectorConfig;
                         if (injectorConfig.exported) {
-                            injectorConfig.injector();
-                            providerInstance = moduleContext.providers.get(token);
+                            providerInstance = injectorConfig.inject();
                             break;
                         }
                     }

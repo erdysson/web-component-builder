@@ -1,9 +1,13 @@
-todo list
+todo : priority
 
-0 - can activate guards
+0.0 - runtime providers
+0.1 - can activate guards
 1 - resolve
 2 - router events
 3 - activated route events
+4 - child routes
+
+todo : rest
 
 4 - fix ie for styles
 5 - clear README

@@ -1,6 +1,6 @@
-export type IContextProviderInjector = () => void;
+export type IContextProviderInjector = () => unknown;
 
 export interface IContextProviderInjectorConfig {
     exported: boolean;
-    injector: IContextProviderInjector;
+    inject: IContextProviderInjector;
 }
