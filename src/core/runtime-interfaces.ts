@@ -1,6 +1,6 @@
-export interface IProviderInstance {
-    exported: boolean;
-    instance: unknown;
-}
+export type IContextProviderInjector = () => void;
 
-export type IContextProviderInjector = () => unknown;
+export interface IContextProviderInjectorConfig {
+    exported: boolean;
+    injector: IContextProviderInjector;
+}

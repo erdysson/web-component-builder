@@ -3,7 +3,7 @@ import {Class, IModule, IModuleConfig, IModuleWithProviders, IProvider, IProvide
 import {Metadata} from './metadata';
 import {IInjectMetadata} from './metadata-interfaces';
 import {Runtime} from './runtime';
-import {IContextProviderInjector} from './runtime-interfaces';
+import {IContextProviderInjector, IContextProviderInjectorConfig} from './runtime-interfaces';
 
 export class Context {
     private readonly runtime: Runtime;
@@ -11,13 +11,17 @@ export class Context {
     private readonly providers: Map<string, unknown> = new Map<string, unknown>();
 
     // injector map of the current context
-    private readonly providerInjectors: Map<string, IContextProviderInjector> = new Map<
+    private readonly providerInjectors: Map<string, IContextProviderInjectorConfig> = new Map<
         string,
-        IContextProviderInjector
+        IContextProviderInjectorConfig
     >();
 
     private static getModuleClass(module: IModule): Class {
         return typeof module === 'function' ? module : module.module;
+    }
+
+    private static getProviderClass(provider: IProvider): Class {
+        return typeof provider === 'function' ? provider : (provider.useClass as Class);
     }
 
     constructor(module: IModule, runtime: Runtime) {
@@ -46,10 +50,13 @@ export class Context {
     private createInjectors(configProviders: IProviderConfig[], moduleConfig: IModuleConfig): void {
         // config providers
         configProviders.forEach((providerConfig: IProviderConfig) => {
-            this.providerInjectors.set(providerConfig.provide, () => {
-                if (!this.providers.has(providerConfig.provide)) {
-                    this.providers.set(providerConfig.provide, providerConfig.useValue);
-                }
+            this.providerInjectors.set(providerConfig.provide, {
+                injector: () => {
+                    if (!this.providers.has(providerConfig.provide)) {
+                        this.providers.set(providerConfig.provide, providerConfig.useValue);
+                    }
+                },
+                exported: true
             });
         });
         // defined providers
@@ -57,25 +64,26 @@ export class Context {
             let injectorToken: string;
             if (typeof provider === 'function') {
                 injectorToken = provider.name;
-                this.providerInjectors.set(injectorToken, () => {
-                    if (!this.providers.has(injectorToken)) {
-                        const constructorParams = this.getConstructorParams(provider, moduleConfig);
-                        this.providers.set(injectorToken, new provider(...constructorParams));
-                    }
+                this.providerInjectors.set(injectorToken, {
+                    injector: () => {
+                        if (!this.providers.has(injectorToken)) {
+                            const constructorParams = this.getConstructorParams(provider, moduleConfig);
+                            this.providers.set(injectorToken, new provider(...constructorParams));
+                        }
+                    },
+                    exported: (moduleConfig.exports || []).indexOf(provider) > -1
                 });
             } else {
                 injectorToken = (provider as IProviderConfig).provide;
-                this.providerInjectors.set(injectorToken, () => {
-                    if (!this.providers.has(injectorToken)) {
-                        const constructorParams = this.getConstructorParams(
-                            (provider as IProviderConfig).useClass as Class,
-                            moduleConfig
-                        );
-                        this.providers.set(
-                            injectorToken,
-                            new ((provider as IProviderConfig).useClass as Class)(...constructorParams)
-                        );
-                    }
+                const ProviderClass = Context.getProviderClass(provider);
+                this.providerInjectors.set(injectorToken, {
+                    injector: () => {
+                        if (!this.providers.has(injectorToken)) {
+                            const constructorParams = this.getConstructorParams(ProviderClass, moduleConfig);
+                            this.providers.set(injectorToken, new ProviderClass(...constructorParams));
+                        }
+                    },
+                    exported: (moduleConfig.exports || []).indexOf(ProviderClass) > -1
                 });
             }
         });
@@ -86,19 +94,24 @@ export class Context {
         return injectMetadataList.map((injectMetadata: IInjectMetadata) => {
             const token = injectMetadata.token;
             if (this.providerInjectors.has(token)) {
-                (this.providerInjectors.get(token) as IContextProviderInjector)();
+                const injectorConfig = this.providerInjectors.get(token) as IContextProviderInjectorConfig;
+                injectorConfig.injector();
                 return this.providers.get(token);
             } else {
                 const imports = moduleConfig.imports || [];
                 let providerInstance: unknown;
                 for (const importedModule of imports) {
-                    const moduleClass: Class =
-                        typeof importedModule === 'function' ? importedModule : importedModule.module;
+                    const moduleClass: Class = Context.getModuleClass(importedModule);
                     const moduleContext = this.runtime.context.get(moduleClass) as Context;
                     if (moduleContext.providerInjectors.has(token)) {
-                        (moduleContext.providerInjectors.get(token) as IContextProviderInjector)();
-                        providerInstance = moduleContext.providers.get(token);
-                        break;
+                        const injectorConfig = moduleContext.providerInjectors.get(
+                            token
+                        ) as IContextProviderInjectorConfig;
+                        if (injectorConfig.exported) {
+                            injectorConfig.injector();
+                            providerInstance = moduleContext.providers.get(token);
+                            break;
+                        }
                     }
                 }
                 if (!providerInstance) {

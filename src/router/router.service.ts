@@ -15,7 +15,7 @@ export class RouterService {
         });
     }
 
-    navigate(url: string, data: unknown = {}): void {
+    navigate(url: string, data: unknown = undefined): void {
         this.locationUtils.modifyState(data, url);
     }
 

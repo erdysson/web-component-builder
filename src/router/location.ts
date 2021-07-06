@@ -22,7 +22,7 @@ export class Location {
         };
     }
 
-    modifyState(data: unknown = {}, uri = '', replaceState = false): void {
+    modifyState(data: unknown = undefined, uri = '', replaceState = false): void {
         if (replaceState) {
             return this.history.replaceState(data, document.title, `#${uri}`);
         }
