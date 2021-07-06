@@ -8,6 +8,8 @@ import {AppService} from '../services/app.service';
         <h2>App Component</h2>
         <button type="button" class="navigate-home">Navigate to Home</button>
         <button type="button" class="navigate-profile">Navigate to Profile</button>
+        <button type="button" class="navigate-person">Navigate to Person</button>
+        <button type="button" class="navigate-person-qp">Navigate to Person with QP</button>
         <router-component></router-component>
     `
 })
@@ -19,12 +21,26 @@ export class App implements IOnInit {
     }
 
     @Listen('click', '.navigate-home')
-    onClickTest(): void {
+    onClickHome(): void {
         this.router.navigate('/home');
     }
 
     @Listen('click', '.navigate-profile')
-    onClickApp(): void {
+    onClickProfile(): void {
         this.router.navigate('/profile');
+    }
+
+    @Listen('click', '.navigate-person')
+    onClickPerson(): void {
+        const id = Math.ceil(Math.random() * 100);
+        console.log('generated random id', id);
+        this.router.navigate('/person/' + id);
+    }
+
+    @Listen('click', '.navigate-person-qp')
+    onClickPersonQueryParams(): void {
+        const id = Math.ceil(Math.random() * 100);
+        console.log('generated random id for qp', id);
+        this.router.navigate(`/person/${id}?qp=true&num=5`);
     }
 }

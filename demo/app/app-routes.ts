@@ -1,14 +1,10 @@
 import {Routes} from 'web-component-builder';
 
-import {App} from './components/app';
 import {Home} from './components/home';
+import {Person} from './components/person';
 import {Profile} from './components/profile';
 
 export const appRoutes: Routes = [
-    {
-        path: '/',
-        component: App
-    },
     {
         path: '/home',
         component: Home
@@ -16,5 +12,13 @@ export const appRoutes: Routes = [
     {
         path: '/profile',
         component: Profile
+    },
+    {
+        path: '/person/:id',
+        component: Person
+    },
+    {
+        path: '*',
+        redirectTo: '/home'
     }
 ];

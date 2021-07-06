@@ -8,10 +8,11 @@ declare global {
     }
 }
 
-export interface Route<T = unknown> {
+export interface Route {
     path: string;
-    component: Class;
-    resolve?: Record<string, Promise<T>>;
+    component?: Class;
+    redirectTo?: string;
+    resolve?: Record<string, Promise<unknown>>;
     canActivate?: Promise<boolean>;
 }
 

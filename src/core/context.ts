@@ -3,7 +3,7 @@ import {Class, IModule, IModuleConfig, IModuleWithProviders, IProvider, IProvide
 import {Metadata} from './metadata';
 import {IInjectMetadata} from './metadata-interfaces';
 import {Runtime} from './runtime';
-import {IContextProviderInjector, IContextProviderInjectorConfig} from './runtime-interfaces';
+import {IContextProviderInjectorConfig} from './runtime-interfaces';
 
 export class Context {
     private readonly runtime: Runtime;

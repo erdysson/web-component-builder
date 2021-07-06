@@ -23,10 +23,15 @@ export class Location {
     }
 
     modifyState(data: unknown = undefined, uri = '', replaceState = false): void {
-        if (replaceState) {
-            return this.history.replaceState(data, document.title, `#${uri}`);
+        const newUri = `#${uri}`;
+        if (window.location.hash === newUri) {
+            return;
         }
-        this.history.pushState(data, document.title, `#${uri}`);
+        if (replaceState) {
+            this.history.replaceState(data, document.title, newUri);
+        } else {
+            this.history.pushState(data, document.title, newUri);
+        }
     }
 
     onLocationChange(callback: (state?: unknown) => void): void {

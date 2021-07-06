@@ -1,8 +1,9 @@
 todo list
-0 - router
-1 - provider types
-2 - module isolation
-3 - module with config
+
+0 - can activate guards
+1 - resolve
+2 - router events
+3 - activated route events
 
 4 - fix ie for styles
 5 - clear README
