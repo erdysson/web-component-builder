@@ -3,7 +3,7 @@ import {Class, IOnViewInit} from '../core/interfaces';
 import {Metadata} from '../core/metadata';
 
 import {Route, Routes} from './interfaces';
-import {RouterService} from './router.service';
+import {Router} from './router';
 
 @Component({
     selector: 'router-component',
@@ -13,10 +13,7 @@ export class RouterComponent implements IOnViewInit {
     @ViewContainer()
     private hostElement!: HTMLElement;
 
-    constructor(
-        @Inject('Routes') private readonly routeConfig: Routes,
-        @Inject() private readonly router: RouterService
-    ) {}
+    constructor(@Inject('Routes') private readonly routeConfig: Routes, @Inject() private readonly router: Router) {}
 
     onViewInit(): void {
         this.router.onNavigationEnd((route: Route) => {

@@ -1,4 +1,4 @@
-import {Component, Inject, IOnInit, Listen, RouterService} from 'web-component-builder';
+import {Component, Inject, IOnInit, Listen, Router} from 'web-component-builder';
 
 @Component({
     selector: 'app-home',
@@ -9,7 +9,7 @@ import {Component, Inject, IOnInit, Listen, RouterService} from 'web-component-b
     `
 })
 export class Home implements IOnInit {
-    constructor(@Inject() private readonly router: RouterService) {}
+    constructor(@Inject() private readonly router: Router) {}
 
     onInit(): void {
         console.log('home component on init');

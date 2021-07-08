@@ -4,7 +4,8 @@ export {};
 
 declare global {
     interface Window {
-        onpushState: (...args: any[]) => void;
+        onPushState: (...args: any[]) => void;
+        onReplaceState: (...args: any[]) => void;
     }
 }
 
@@ -14,6 +15,7 @@ export interface Route {
     redirectTo?: string;
     resolve?: Record<string, () => Promise<unknown>>;
     canActivate?: Class<CanActivate>[];
+    data?: any;
 }
 
 export type Routes = Route[];
@@ -21,3 +23,13 @@ export type Routes = Route[];
 export interface CanActivate {
     canActivate(): Promise<boolean>;
 }
+
+export interface RouteMatch {
+    path: string;
+    params: Params;
+    queryParams: QueryParams;
+}
+
+export type Params = Record<string, string>;
+export type QueryParams = Record<string, string>;
+export type Resolve = Record<string, any>;

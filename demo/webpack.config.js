@@ -12,7 +12,8 @@ module.exports = {
         compress: false,
         port: 9000,
         inline: true,
-        hot: true
+        hot: true,
+        historyApiFallback: true
     },
     resolve: {
         // webpack normally does not pick up the corresponding version based on browserslist

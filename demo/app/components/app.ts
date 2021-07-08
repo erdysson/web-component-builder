@@ -1,4 +1,4 @@
-import {Component, Inject, IOnInit, Listen, RouterService, ViewEncapsulation} from 'web-component-builder';
+import {Component, Inject, IOnInit, Listen, Router, ViewEncapsulation} from 'web-component-builder';
 
 import {AppService} from '../services/app.service';
 
@@ -14,7 +14,7 @@ import {AppService} from '../services/app.service';
     `
 })
 export class App implements IOnInit {
-    constructor(@Inject() private readonly router: RouterService, @Inject() private readonly app: AppService) {}
+    constructor(@Inject() private readonly router: Router, @Inject() private readonly app: AppService) {}
 
     onInit(): void {
         console.log('app component on init');

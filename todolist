@@ -1,10 +1,7 @@
 todo : priority
 
-0.0 - runtime providers
-0.1 - can activate guards
 1 - resolve
 2 - router events
-3 - activated route events
 4 - child routes
 
 todo : rest

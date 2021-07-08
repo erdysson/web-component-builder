@@ -1,14 +1,15 @@
 import {Module} from '../core/decorators';
 import {IModuleWithProviders} from '../core/interfaces';
 
+import {ActivatedRoute} from './activated-route';
 import {Routes} from './interfaces';
+import {Router} from './router';
 import {RouterComponent} from './router.component';
-import {RouterService} from './router.service';
 
 @Module({
     components: [RouterComponent],
-    providers: [RouterService],
-    exports: [RouterService],
+    providers: [Router, ActivatedRoute],
+    exports: [Router, ActivatedRoute],
     declarations: [RouterComponent]
 })
 export class RouterModule {

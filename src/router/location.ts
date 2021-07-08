@@ -1,47 +1,55 @@
 export class Location {
     private readonly history: History = window.history;
 
-    private readonly locationChangeCallbackQueue: Array<(state?: unknown) => void> = [];
+    constructor(private readonly locationChangeCallback: (pathname: string, search: string, data?: unknown) => void) {
+        window.onpopstate =
+            window.onPushState =
+            window.onReplaceState =
+                (...args) => {
+                    this.stateChangeHandler(args[0].state);
+                };
 
-    constructor() {
         this.patchWindowPopState();
+        this.patchWindowReplaceState();
+    }
 
-        window.onpopstate = window.onpushState = (...args) => {
-            const data = args[0].state;
-            this.locationChangeCallbackQueue.forEach((cb) => setTimeout(() => cb(data)));
-        };
+    private stateChangeHandler(data: unknown) {
+        const {pathname, search} = window.location;
+        this.locationChangeCallback(pathname, search, data);
     }
 
     private patchWindowPopState(): void {
         const pushState = this.history.pushState;
         this.history.pushState = function (state: unknown, title: string, url: string) {
-            if (typeof window.onpushState === 'function') {
-                window.onpushState({state});
+            pushState.apply(history, [state, title, url]);
+            if (typeof window.onPushState === 'function') {
+                window.onPushState({state, title, url});
             }
-            return pushState.apply(history, [state, title, url]);
+        };
+    }
+
+    private patchWindowReplaceState(): void {
+        const replaceState = this.history.replaceState;
+        this.history.replaceState = function (state: unknown, title: string, url: string) {
+            replaceState.apply(history, [state, title, url]);
+            if (typeof window.onReplaceState === 'function') {
+                window.onReplaceState({state, title, url});
+            }
         };
     }
 
     modifyState(data: unknown = undefined, uri = '', replaceState = false): void {
-        const newUri = `#${uri}`;
-        if (window.location.hash === newUri) {
+        if (!replaceState && window.location.pathname === uri) {
             return;
         }
         if (replaceState) {
-            this.history.replaceState(data, document.title, newUri);
+            this.history.replaceState(data, document.title, uri);
         } else {
-            this.history.pushState(data, document.title, newUri);
+            this.history.pushState(data, document.title, uri);
         }
     }
 
-    onLocationChange(callback: (state?: unknown) => void): void {
-        this.locationChangeCallbackQueue.push(callback);
-    }
-
     init(): void {
-        const state = this.history.state;
-        this.locationChangeCallbackQueue.forEach((callback) => {
-            callback(state);
-        });
+        this.modifyState(this.history.state, window.location.pathname, true);
     }
 }
