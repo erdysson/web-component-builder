@@ -1,12 +1,16 @@
 import {Class} from '../core/interfaces';
 
-export {};
-
 declare global {
     interface Window {
         onPushState: (...args: any[]) => void;
         onReplaceState: (...args: any[]) => void;
     }
+}
+
+export interface LocationChangeData {
+    path: string;
+    query: string;
+    data?: any;
 }
 
 export interface Route {
@@ -31,5 +35,11 @@ export interface RouteMatch {
 }
 
 export type Params = Record<string, string>;
+
 export type QueryParams = Record<string, string>;
+
 export type Resolve = Record<string, any>;
+
+export type Subscriber<T> = (data: T) => void;
+
+export type SubscriberMap<T = any> = Map<symbol, Subscriber<T>>;

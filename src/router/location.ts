@@ -1,7 +1,12 @@
+import {EventEmitter} from './event-emitter';
+import {LocationChangeData} from './interfaces';
+
 export class Location {
     private readonly history: History = window.history;
 
-    constructor(private readonly locationChangeCallback: (pathname: string, search: string, data?: unknown) => void) {
+    readonly events: EventEmitter = new EventEmitter('location');
+
+    constructor() {
         window.onpopstate =
             window.onPushState =
             window.onReplaceState =
@@ -14,8 +19,11 @@ export class Location {
     }
 
     private stateChangeHandler(data: unknown) {
-        const {pathname, search} = window.location;
-        this.locationChangeCallback(pathname, search, data);
+        this.events.emit<LocationChangeData>('LocationChange', {
+            path: window.location.pathname,
+            query: window.location.search,
+            data
+        });
     }
 
     private patchWindowPopState(): void {

@@ -26,12 +26,10 @@ export class RouteParser {
         const params: Params = exec(pathname, urlMatch);
         const queryParams: QueryParams = RouteParser.parseQueryParams(query);
         const path = urlMatch[0].old;
-        const routeMatch = {
+        return {
             path,
             params,
             queryParams
         };
-        console.log('route match', routeMatch);
-        return routeMatch;
     }
 }

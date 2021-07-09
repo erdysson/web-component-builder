@@ -4,18 +4,20 @@ import {Class} from '../core/interfaces';
 
 import {ActiveRoute} from './activate-route';
 import {ActivatedRoute} from './activated-route';
-import {CanActivate, Route, RouteMatch, Routes} from './interfaces';
+import {EventEmitter} from './event-emitter';
+import {CanActivate, LocationChangeData, Route, RouteMatch, Routes} from './interfaces';
 import {Location} from './location';
 import {RouteParser} from './route-parser';
+import {RouterEvent} from './router-event.enum';
 
 export class Router {
     private readonly locationUtils;
 
-    private readonly navigationEndHandlers: Array<(route: Route) => void> = [];
-
     private currentRoute!: Route;
 
     private readonly parser: RouteParser;
+
+    readonly events: EventEmitter = new EventEmitter('router');
 
     constructor(
         @Inject('Injector') private readonly injector: Injector,
@@ -23,30 +25,19 @@ export class Router {
         @Inject() private readonly activatedRoute: ActivatedRoute
     ) {
         this.parser = new RouteParser(this.routeConfig.map((route: Route) => route.path));
-        this.locationUtils = new Location(this.locationChangeHandler.bind(this));
-    }
+        this.locationUtils = new Location();
+        this.locationUtils.events.subscribe('LocationChange', async (data: LocationChangeData) => {
+            const {path, query} = data;
 
-    navigate(url: string, data: unknown = undefined): void {
-        this.locationUtils.modifyState(data, url);
-    }
-
-    onNavigationEnd(callback: (route: Route) => void): void {
-        this.navigationEndHandlers.push(callback);
-    }
-
-    // todo : get base
-    init(): void {
-        this.locationUtils.init();
-    }
-
-    private locationChangeHandler(path: string, query: string): void {
-        this.navigationEndHandlers.forEach(async (callback) => {
             const match = this.parser.match(path, query);
             const route = this.getRouteConfig(match);
 
             if (route.redirectTo) {
                 return this.navigate(route.redirectTo);
             }
+
+            // emit navigation start event
+            this.events.emit(RouterEvent.NAVIGATION_START, route);
 
             let canActivate: boolean;
 
@@ -66,6 +57,8 @@ export class Router {
             }
 
             if (!canActivate) {
+                // emit navigation failed event
+                this.events.emit(RouterEvent.NAVIGATION_FAILED, route);
                 return;
             }
 
@@ -75,9 +68,17 @@ export class Router {
                 return;
             }
 
-            callback(route);
             this.currentRoute = route;
+            this.events.emit(RouterEvent.NAVIGATION_END, route);
         });
+    }
+
+    navigate(url: string, data: unknown = undefined): void {
+        this.locationUtils.modifyState(data, url);
+    }
+
+    init(): void {
+        this.locationUtils.init();
     }
 
     private getRouteConfig(match: RouteMatch) {
