@@ -1,6 +1,6 @@
 import {Inject} from '../core/decorators';
-import {ActiveRoute} from './activate-route';
 
+import {ActiveRoute} from './activate-route';
 import {EventEmitter} from './event-emitter';
 import {Params, QueryParams, RouteMatch} from './interfaces';
 import {Router} from './router';
