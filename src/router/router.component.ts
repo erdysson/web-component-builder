@@ -2,9 +2,8 @@ import {Component, Inject, ViewContainer} from '../core/decorators';
 import {Class, IOnInit, IOnViewInit} from '../core/interfaces';
 import {Metadata} from '../core/metadata';
 
-import {LocationChangeData, Route} from './interfaces';
+import {Route} from './interfaces';
 import {Location} from './location';
-import {LocationEvent} from './location-event.enum';
 import {Router} from './router';
 import {RouterEvent} from './router-event.enum';
 
@@ -19,8 +18,8 @@ export class RouterComponent implements IOnInit, IOnViewInit {
     constructor(@Inject() private readonly location: Location, @Inject() private readonly router: Router) {}
 
     onInit(): void {
-        this.router.events.subscribe<Route>(RouterEvent.NAVIGATION_END, (route: Route) => {
-            const config = Metadata.getComponentConfig(route.component as Class);
+        this.router.events.subscribe(RouterEvent.NAVIGATION_END, (event: {from: Route; to: Route}) => {
+            const config = Metadata.getComponentConfig(event.to.component as Class);
             const newRouteElement = document.createElement(config.selector);
             const oldRouteElement = this.hostElement.childNodes.item(0);
 

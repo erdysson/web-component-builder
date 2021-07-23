@@ -33,14 +33,12 @@ export class App implements IOnInit {
     @Listen('click', '.navigate-person')
     onClickPerson(): void {
         const id = Math.ceil(Math.random() * 100);
-        console.log('generated random id', id);
         this.router.navigate('/person/' + id);
     }
 
     @Listen('click', '.navigate-person-qp')
     onClickPersonQueryParams(): void {
         const id = Math.ceil(Math.random() * 100);
-        console.log('generated random id for qp', id);
         this.router.navigate(`/person/${id}?qp=true&num=5`);
     }
 }

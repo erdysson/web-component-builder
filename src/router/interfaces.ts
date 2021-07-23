@@ -7,10 +7,17 @@ declare global {
     }
 }
 
-export interface LocationChangeData {
-    path: string;
-    query: string;
-    data?: any;
+export interface LocationChange {
+    pathname: string;
+    search: string;
+    data?: unknown;
+}
+
+export interface RouteMatch {
+    config: Route;
+    params: Params;
+    queryParams: QueryParams;
+    data?: unknown;
 }
 
 export interface Route {
@@ -32,17 +39,9 @@ export interface Resolvable<T = unknown> {
     resolve(): Promise<T>;
 }
 
-export interface RouteMatch {
-    path: string;
-    params: Params;
-    queryParams: QueryParams;
-}
-
 export type Params = Record<string, string>;
 
 export type QueryParams = Record<string, string>;
-
-export type Resolve = Record<string, any>;
 
 export type Subscriber<T> = (data: T) => void;
 

@@ -1,4 +1,4 @@
-import {ActivatedRoute, Component, Inject, IOnInit, IOnViewInit, Listen, Router} from 'web-component-builder';
+import {ActivatedRoute, Component, Inject, IOnInit, Listen, Router} from 'web-component-builder';
 
 @Component({
     selector: 'app-profile',
@@ -8,15 +8,11 @@ import {ActivatedRoute, Component, Inject, IOnInit, IOnViewInit, Listen, Router}
         <button type="button">Go to Home</button>
     `
 })
-export class Profile implements IOnInit, IOnViewInit {
+export class Profile implements IOnInit {
     constructor(@Inject() private readonly router: Router, @Inject() private readonly activatedRoute: ActivatedRoute) {}
 
     onInit(): void {
-        console.log('profile component on init');
-    }
-
-    onViewInit(): void {
-        console.log('resolved value', this.activatedRoute.getSnapshot());
+        console.log('profile component on init. activated route', this.activatedRoute.getSnapshot());
     }
 
     @Listen('click', 'button')

@@ -1,5 +1,5 @@
 import {EventEmitter} from './event-emitter';
-import {LocationChangeData} from './interfaces';
+import {LocationChange} from './interfaces';
 import {LocationEvent} from './location-event.enum';
 
 export class Location {
@@ -19,12 +19,9 @@ export class Location {
         this.patchWindowReplaceState();
     }
 
-    private stateChangeHandler(data: unknown) {
-        this.events.emit<LocationChangeData>(LocationEvent.LOCATION_CHANGE, {
-            path: window.location.pathname,
-            query: window.location.search,
-            data
-        });
+    private stateChangeHandler(data: unknown): void {
+        const {pathname, search} = window.location;
+        this.events.emit<LocationChange>(LocationEvent.LOCATION_CHANGE, {pathname, search, data});
     }
 
     private patchWindowPopState(): void {
@@ -48,10 +45,6 @@ export class Location {
     }
 
     modifyState(data: unknown = undefined, uri = '', replaceState = false): void {
-        // if (!replaceState && window.location.pathname === uri) {
-        //     console.log('same pathname', uri);
-        //     return;
-        // }
         if (replaceState) {
             this.history.replaceState(data, document.title, uri);
         } else {

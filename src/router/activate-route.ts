@@ -1,10 +1,10 @@
-import {Params, QueryParams, Resolve} from './interfaces';
+import {Params, QueryParams} from './interfaces';
 
 export class ActiveRoute {
     constructor(
-        public params?: Params,
-        public queryParams?: QueryParams,
-        public resolve?: Resolve,
-        public data?: any
+        public params: Params,
+        public queryParams: QueryParams,
+        public resolve?: unknown,
+        public data?: unknown
     ) {}
 }

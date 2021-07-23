@@ -10,3 +10,4 @@ export * from './router/router';
 export * from './router/activate-route';
 export * from './router/activated-route';
 export * from './router/router.module';
+export * from './router/subscription';
