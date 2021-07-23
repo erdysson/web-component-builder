@@ -1,5 +1,6 @@
 import {EventEmitter} from './event-emitter';
 import {LocationChangeData} from './interfaces';
+import {LocationEvent} from './location-event.enum';
 
 export class Location {
     private readonly history: History = window.history;
@@ -19,7 +20,7 @@ export class Location {
     }
 
     private stateChangeHandler(data: unknown) {
-        this.events.emit<LocationChangeData>('LocationChange', {
+        this.events.emit<LocationChangeData>(LocationEvent.LOCATION_CHANGE, {
             path: window.location.pathname,
             query: window.location.search,
             data
@@ -47,9 +48,10 @@ export class Location {
     }
 
     modifyState(data: unknown = undefined, uri = '', replaceState = false): void {
-        if (!replaceState && window.location.pathname === uri) {
-            return;
-        }
+        // if (!replaceState && window.location.pathname === uri) {
+        //     console.log('same pathname', uri);
+        //     return;
+        // }
         if (replaceState) {
             this.history.replaceState(data, document.title, uri);
         } else {

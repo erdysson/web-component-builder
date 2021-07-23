@@ -3,12 +3,13 @@ import {IModuleWithProviders} from '../core/interfaces';
 
 import {ActivatedRoute} from './activated-route';
 import {Routes} from './interfaces';
+import {Location} from './location';
 import {Router} from './router';
 import {RouterComponent} from './router.component';
 
 @Module({
     components: [RouterComponent],
-    providers: [Router, ActivatedRoute],
+    providers: [Location, Router, ActivatedRoute],
     exports: [Router, ActivatedRoute],
     declarations: [RouterComponent]
 })

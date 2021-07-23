@@ -2,7 +2,11 @@ import {Injectable} from 'web-component-builder';
 
 @Injectable()
 export class AppService {
-    appTest(): void {
-        console.log('app test service log');
+    getLanguage(): Promise<string> {
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                resolve(window.navigator.language);
+            }, 3000);
+        });
     }
 }

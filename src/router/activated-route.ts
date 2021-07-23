@@ -1,61 +1,72 @@
+import {Inject} from '../core/decorators';
 import {ActiveRoute} from './activate-route';
+
 import {EventEmitter} from './event-emitter';
-import {Params, QueryParams} from './interfaces';
+import {Params, QueryParams, RouteMatch} from './interfaces';
+import {Router} from './router';
+import {RouterEvent} from './router-event.enum';
 
 export class ActivatedRoute {
-    private _activeRoute!: ActiveRoute;
+    private routeMatch!: RouteMatch;
 
-    private readonly queryParamChangeCallbackQueue: Array<(queryParams: QueryParams) => void> = [];
-
-    private readonly paramChangeCallbackQueue: Array<(params: Params) => void> = [];
+    private readonly instance: ActiveRoute = new ActiveRoute();
 
     readonly events: EventEmitter = new EventEmitter('activated_route');
 
-    set activeRoute(activeRoute: ActiveRoute) {
-        // initial set
-        if (!this._activeRoute) {
-            this._activeRoute = activeRoute;
-            // this.events.emit('QueryParamChange', this._activeRoute.queryParams);
-            this.queryParamChangeCallbackQueue.forEach((cb) => cb(this._activeRoute.queryParams));
-            // this.events.emit('ParamChange', this._activeRoute.params);
-            this.paramChangeCallbackQueue.forEach((cb) => cb(this._activeRoute.params));
-        } else {
-            // detect changes
-            const hasQueryParamChange = this.hasQueryParamChange(activeRoute);
-            const hasParamChange = this.hasParamChange(activeRoute);
-            // set new active route
-            this._activeRoute = activeRoute;
-            // trigger callbacks if necessary
-            if (hasQueryParamChange) {
-                this.queryParamChangeCallbackQueue.forEach((cb) => cb(this._activeRoute.queryParams));
+    constructor(@Inject() private readonly router: Router) {
+        this.router.events.subscribe<RouteMatch>(RouterEvent.ROUTE_MATCH, (matchData: RouteMatch) => {
+            console.log('route match', matchData);
+            const {params, queryParams} = matchData;
+
+            this.instance.params = params;
+            this.instance.queryParams = queryParams;
+
+            if (!this.routeMatch) {
+                this.events.emit('ParamChange', params);
+                this.events.emit('QueryParamChange', queryParams);
+                this.routeMatch = matchData;
+            } else {
+                if (this.hasParamChange(params)) {
+                    this.events.emit('ParamChange', params);
+                }
+                if (this.hasQueryParamChange(queryParams)) {
+                    this.events.emit('QueryParamChange', queryParams);
+                }
+                this.routeMatch = matchData;
             }
-            if (hasParamChange) {
-                this.paramChangeCallbackQueue.forEach((cb) => cb(this._activeRoute.params));
-            }
-        }
+        });
+
+        this.router.events.subscribe(RouterEvent.RESOLVE_END, (resolveData: Record<string, unknown>) => {
+            console.log('resolve ended', resolveData);
+            this.instance.resolve = resolveData;
+        });
     }
 
-    private hasQueryParamChange(newActiveRoute: ActiveRoute): boolean {
-        return Object.keys(newActiveRoute.queryParams).some(
-            (key: string) => newActiveRoute.queryParams[key] !== this._activeRoute.queryParams[key]
-        );
+    private hasQueryParamChange(queryParams: QueryParams): boolean {
+        return Object.keys(queryParams).some((key: string) => queryParams[key] !== this.routeMatch.queryParams[key]);
     }
 
-    private hasParamChange(newActiveRoute: ActiveRoute): boolean {
-        return Object.keys(newActiveRoute.params).some(
-            (key: string) => newActiveRoute.params[key] !== this._activeRoute.params[key]
-        );
-    }
-
-    onQueryParamChange(callback: (queryParams: QueryParams) => void): void {
-        this.queryParamChangeCallbackQueue.push(callback);
-        // initial call
-        callback(this._activeRoute.queryParams);
+    private hasParamChange(params: Params): boolean {
+        return Object.keys(params).some((key: string) => params[key] !== this.routeMatch.params[key]);
     }
 
     onParamChange(callback: (params: Params) => void): void {
-        this.paramChangeCallbackQueue.push(callback);
+        this.events.subscribe('ParamChange', callback);
         // initial call
-        callback(this._activeRoute.params);
+        if (this.routeMatch) {
+            callback(this.routeMatch.params);
+        }
+    }
+
+    onQueryParamChange(callback: (queryParams: QueryParams) => void): void {
+        this.events.subscribe('QueryParamChange', callback);
+        // initial call
+        if (this.routeMatch) {
+            callback(this.routeMatch.queryParams);
+        }
+    }
+
+    getSnapshot(): ActiveRoute {
+        return this.instance;
     }
 }

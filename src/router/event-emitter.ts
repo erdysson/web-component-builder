@@ -18,7 +18,10 @@ export class EventEmitter {
     }
 
     emit<T>(eventName: string, data: T): void {
-        const subscription: SubscriberMap = this.subscriptions.get(eventName) as SubscriberMap;
+        const subscription = this.subscriptions.get(eventName);
+        if (!subscription) {
+            return;
+        }
         for (const subscriber of subscription.values()) {
             ((s: Subscriber<T>) => setTimeout(() => s(data)))(subscriber);
         }

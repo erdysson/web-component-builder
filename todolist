@@ -1,7 +1,6 @@
 todo : priority
 
 0 - internal providers
-1 - resolve
 2 - router events
 4 - child routes
 

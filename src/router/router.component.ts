@@ -2,7 +2,9 @@ import {Component, Inject, ViewContainer} from '../core/decorators';
 import {Class, IOnInit, IOnViewInit} from '../core/interfaces';
 import {Metadata} from '../core/metadata';
 
-import {Route, Routes} from './interfaces';
+import {LocationChangeData, Route} from './interfaces';
+import {Location} from './location';
+import {LocationEvent} from './location-event.enum';
 import {Router} from './router';
 import {RouterEvent} from './router-event.enum';
 
@@ -14,11 +16,10 @@ export class RouterComponent implements IOnInit, IOnViewInit {
     @ViewContainer()
     private hostElement!: HTMLElement;
 
-    constructor(@Inject('Routes') private readonly routeConfig: Routes, @Inject() private readonly router: Router) {}
+    constructor(@Inject() private readonly location: Location, @Inject() private readonly router: Router) {}
 
     onInit(): void {
         this.router.events.subscribe<Route>(RouterEvent.NAVIGATION_END, (route: Route) => {
-            console.log('navigation end called');
             const config = Metadata.getComponentConfig(route.component as Class);
             const newRouteElement = document.createElement(config.selector);
             const oldRouteElement = this.hostElement.childNodes.item(0);
@@ -32,7 +33,7 @@ export class RouterComponent implements IOnInit, IOnViewInit {
     }
 
     onViewInit(): void {
-        // init routing
-        this.router.init();
+        // init location services
+        this.location.init();
     }
 }

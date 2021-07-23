@@ -17,7 +17,7 @@ export interface Route {
     path: string;
     component?: Class;
     redirectTo?: string;
-    resolve?: Record<string, () => Promise<unknown>>;
+    resolve?: Record<string, Class<Resolvable>>;
     canActivate?: Class<CanActivate>[];
     data?: any;
 }
@@ -26,6 +26,10 @@ export type Routes = Route[];
 
 export interface CanActivate {
     canActivate(): Promise<boolean>;
+}
+
+export interface Resolvable<T = unknown> {
+    resolve(): Promise<T>;
 }
 
 export interface RouteMatch {
