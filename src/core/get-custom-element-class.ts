@@ -13,7 +13,7 @@ export function getCustomElementClass(
     viewChildren: IViewChildMetadata[],
     eventListener: IEventListenerMetadata[],
     template: string,
-    componentInstanceInjector: () => Class
+    componentInstanceInjector: () => any
 ): Class<HTMLElement> {
     return class extends HTMLElement implements ICustomElement {
         static get observedAttributes(): string[] {
@@ -32,13 +32,6 @@ export function getCustomElementClass(
             this.defineProperties(this);
             // trigger property change to map the values from element to class
             this.assignPropertyValues();
-            // insert content of the component
-            this.insertContent();
-
-            setTimeout(() => {
-                // after view init
-                this.mappedInstance.onViewInit?.bind(this.mappedInstance)();
-            });
         }
 
         attributeChangedCallback(name: string, oldValue: string, newValue: string): void {
@@ -69,12 +62,15 @@ export function getCustomElementClass(
 
         connectedCallback(): void {
             this.state = CustomElementState.CONNECTED;
+            // insert content of the component
+            this.insertContent();
             this.mappedInstance.onInit?.bind(this.mappedInstance)();
         }
 
         disconnectedCallback(): void {
             this.state = CustomElementState.DISCONNECTED;
             this.mappedInstance.onDestroy?.bind(this.mappedInstance)();
+            // todo : check removal of the references in the instances
         }
 
         private defineProperties(context: ICustomElement): void {
@@ -109,7 +105,11 @@ export function getCustomElementClass(
                     viewChildConfig.querySelector
                 );
                 this.mappedInstance[viewChildConfig.propertyKey] =
-                    elements.length === 0 ? null : elements.length === 1 ? elements.item(0) : Array.from(elements);
+                    elements.length === 0
+                        ? null
+                        : elements.length === 1
+                        ? elements.item(0)
+                        : Array.from(elements);
             });
         }
 
@@ -132,32 +132,29 @@ export function getCustomElementClass(
         }
 
         private insertContent(): void {
-            // setTimeout is required because of the execution order of onInit() calls
-            setTimeout(() => {
-                if (viewEncapsulation) {
-                    const shadow = this.attachShadow({mode: 'open'});
-                    if (styles.length) {
-                        const style = document.createElement('style');
-                        style.textContent = styles.join('\n');
-                        shadow.appendChild(style);
-                    }
-                    shadow.innerHTML += template;
-                } else {
-                    // inject template
-                    if (styles.length) {
-                        const style = document.createElement('style');
-                        style.textContent = styles.join('\n');
-                        this.appendChild(style);
-                    }
-                    this.insertAdjacentHTML('beforeend', template);
+            if (viewEncapsulation) {
+                const shadow = this.attachShadow({mode: 'open'});
+                if (styles.length) {
+                    const style = document.createElement('style');
+                    style.textContent = styles.join('\n');
+                    shadow.appendChild(style);
                 }
-                // assign view container
-                this.assignViewContainer();
-                // assign view children
-                this.assignViewChildren();
-                // assign event handlers
-                this.assignEventListeners();
-            });
+                shadow.innerHTML += template;
+            } else {
+                // inject template
+                if (styles.length) {
+                    const style = document.createElement('style');
+                    style.textContent = styles.join('\n');
+                    this.appendChild(style);
+                }
+                this.insertAdjacentHTML('beforeend', template);
+            }
+            // assign view container
+            this.assignViewContainer();
+            // assign view children
+            this.assignViewChildren();
+            // assign event handlers
+            this.assignEventListeners();
         }
     };
 }

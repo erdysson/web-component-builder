@@ -12,7 +12,6 @@ import {
     IOnDestroy,
     IOnInit,
     IOnPropChanges,
-    IOnViewInit,
     IPropChanges,
     Listen,
     Module,

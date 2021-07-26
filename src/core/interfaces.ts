@@ -1,3 +1,4 @@
+import {Route} from '../router/interfaces';
 import {ViewEncapsulation} from './enums';
 // eslint-disable-next-line @typescript-eslint/ban-types
 export interface Class<TClass extends {} = {}> extends Function {
@@ -74,10 +75,11 @@ export interface IOnInit {
     onInit(): void;
 }
 
-export interface IOnViewInit {
-    onViewInit(): void;
-}
-
 export interface IOnDestroy {
     onDestroy(): void;
+}
+
+export interface NavigationEvent {
+    from: Route;
+    to: Route;
 }

@@ -1,13 +1,16 @@
-import {EventEmitter} from './event-emitter';
-import {LocationChange} from './interfaces';
-import {LocationEvent} from './location-event.enum';
+import {Inject, Injectable} from '../core/decorators';
 
+import {PubSub} from './pub-sub';
+import {RouteMatcher} from './route-matcher';
+
+@Injectable()
 export class Location {
     private readonly history: History = window.history;
 
-    readonly events: EventEmitter = new EventEmitter('location');
-
-    constructor() {
+    constructor(
+        @Inject() private readonly pubSub: PubSub,
+        @Inject() private readonly routeMatcher: RouteMatcher
+    ) {
         window.onpopstate =
             window.onPushState =
             window.onReplaceState =
@@ -21,7 +24,7 @@ export class Location {
 
     private stateChangeHandler(data: unknown): void {
         const {pathname, search} = window.location;
-        this.events.emit<LocationChange>(LocationEvent.LOCATION_CHANGE, {pathname, search, data});
+        this.routeMatcher.onLocationChange({pathname, search, data});
     }
 
     private patchWindowPopState(): void {

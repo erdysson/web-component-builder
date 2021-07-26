@@ -30,7 +30,11 @@ export class Metadata {
     static setInjectedProviderConfig(hostClass: Class, token: string, parameterIndex: number): void {
         const hasMetadata = Reflect.hasMetadata(METADATA_KEYS.INJECT, hostClass);
         if (!hasMetadata) {
-            Reflect.defineMetadata(METADATA_KEYS.INJECT, [{token, parameterIndex}] as IInjectMetadata[], hostClass);
+            Reflect.defineMetadata(
+                METADATA_KEYS.INJECT,
+                [{token, parameterIndex}] as IInjectMetadata[],
+                hostClass
+            );
         } else {
             const injectMetadata = Metadata.getInjectedProviderConfig(hostClass);
             injectMetadata.unshift({

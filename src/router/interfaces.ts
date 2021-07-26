@@ -26,7 +26,7 @@ export interface Route {
     redirectTo?: string;
     resolve?: Record<string, Class<Resolvable>>;
     canActivate?: Class<CanActivate>[];
-    data?: any;
+    data?: unknown;
 }
 
 export type Routes = Route[];
@@ -44,5 +44,3 @@ export type Params = Record<string, string>;
 export type QueryParams = Record<string, string>;
 
 export type Subscriber<T> = (data: T) => void;
-
-export type SubscriberMap<T = any> = Map<symbol, Subscriber<T>>;

@@ -1,29 +1,22 @@
-import {Subscriber, SubscriberMap} from './interfaces';
+import {Subscriber} from './interfaces';
 import {Subscription} from './subscription';
 
-export class EventEmitter {
-    private readonly subscriptions: Map<string, SubscriberMap> = new Map<string, SubscriberMap>();
+export class EventEmitter<T = unknown> {
+    private readonly subscriptions: Subscriber<T>[] = [];
 
-    constructor(private readonly namespace: string) {}
+    private data!: T;
 
-    subscribe<T = any>(eventName: string, subscriber: Subscriber<T>): Subscription {
-        if (!this.subscriptions.has(eventName)) {
-            this.subscriptions.set(eventName, new Map());
+    subscribe(subscriber: Subscriber<T>): Subscription {
+        const index = this.subscriptions.push(subscriber) - 1;
+        // initial call
+        if (this.data !== undefined) {
+            subscriber(this.data);
         }
-        const subscription = this.subscriptions.get(eventName);
-        const subscriptionKey = Symbol(eventName);
-        subscription?.set(subscriptionKey, subscriber);
-
-        return new Subscription(() => subscription?.delete(subscriptionKey));
+        return new Subscription(() => this.subscriptions.splice(index, 1));
     }
 
-    emit<T>(eventName: string, data: T): void {
-        const subscription = this.subscriptions.get(eventName);
-        if (!subscription) {
-            return;
-        }
-        for (const subscriber of subscription.values()) {
-            ((s: Subscriber<T>) => setTimeout(() => s(data)))(subscriber);
-        }
+    emit(data: T): void {
+        this.subscriptions.forEach((s: Subscriber<T>) => setTimeout(() => s(data)));
+        this.data = data;
     }
 }

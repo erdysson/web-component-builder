@@ -4,7 +4,6 @@ import {
     Inject,
     IOnDestroy,
     IOnInit,
-    IOnViewInit,
     Params,
     QueryParams,
     Subscription,
@@ -18,7 +17,7 @@ import {
         <div class="person-message"></div>
     `
 })
-export class Person implements IOnInit, IOnViewInit, IOnDestroy {
+export class Person implements IOnInit, IOnDestroy {
     @ViewChild('.person-message')
     private personMessageDiv!: HTMLElement;
 
@@ -39,13 +38,11 @@ export class Person implements IOnInit, IOnViewInit, IOnDestroy {
             this.salute();
         });
 
-        this.queryParamChangeSubscription = this.activatedRoute.onQueryParamChange((params: QueryParams) => {
-            console.log('query params changed in person', params);
-        });
-    }
-
-    onViewInit(): void {
-        //
+        this.queryParamChangeSubscription = this.activatedRoute.onQueryParamChange(
+            (params: QueryParams) => {
+                console.log('query params changed in person', params);
+            }
+        );
     }
 
     onDestroy(): void {

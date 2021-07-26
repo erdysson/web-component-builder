@@ -1,20 +1,13 @@
 import {exec, match, Route as MatchedRoute, parse, Segment} from 'matchit';
 
-import {Inject} from '../core/decorators';
+import {Inject, Injectable} from '../core/decorators';
 
-import {EventEmitter} from './event-emitter';
 import {LocationChange, Params, QueryParams, Route, RouteMatch, Routes} from './interfaces';
-import {Location} from './location';
-import {LocationEvent} from './location-event.enum';
+import {PubSub} from './pub-sub';
 
-export enum RouteMatchEvents {
-    ROUTE_MATCH = 'ROUTE_MATCH'
-}
-
+@Injectable()
 export class RouteMatcher {
     private readonly parsedRoutes: MatchedRoute[];
-
-    readonly events: EventEmitter = new EventEmitter('route-matcher');
 
     private static parseQueryParams(queryStr = ''): QueryParams {
         return queryStr
@@ -27,15 +20,12 @@ export class RouteMatcher {
             }, {});
     }
 
-    constructor(@Inject('Routes') private readonly routeConfig: Routes, @Inject() private readonly location: Location) {
+    constructor(
+        @Inject() private readonly pubSub: PubSub,
+        @Inject('Routes') private readonly routeConfig: Routes
+    ) {
         // parse configured routes for matching
         this.parsedRoutes = this.routeConfig.map((config: Route) => parse(config.path));
-        // listen location change and match route with parsed information
-        this.location.events.subscribe(LocationEvent.LOCATION_CHANGE, (locationChange: LocationChange) => {
-            const {pathname, search, data} = locationChange;
-            const routeMatch: RouteMatch = this.match(pathname, search, data);
-            this.events.emit(RouteMatchEvents.ROUTE_MATCH, routeMatch);
-        });
     }
 
     private match(pathname: string, search: string, data?: unknown): RouteMatch {
@@ -61,5 +51,11 @@ export class RouteMatcher {
             }
         }
         return routeConfig;
+    }
+
+    onLocationChange(locationChange: LocationChange): void {
+        const {pathname, search, data} = locationChange;
+        const routeMatch: RouteMatch = this.match(pathname, search, data);
+        this.pubSub.routeMatch.emit(routeMatch);
     }
 }

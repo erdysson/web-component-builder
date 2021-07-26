@@ -1,29 +1,26 @@
-import {Inject} from '../core/decorators';
+import {Inject, Injectable} from '../core/decorators';
 
 import {ActiveRoute} from './activate-route';
-import {EventEmitter} from './event-emitter';
 import {Params, QueryParams} from './interfaces';
-import {RouteMatcher} from './route-matcher';
+import {PubSub} from './pub-sub';
 import {Subscription} from './subscription';
 
+@Injectable()
 export class ActivatedRoute {
     private route!: ActiveRoute;
 
-    readonly events: EventEmitter = new EventEmitter('activated_route');
-
-    constructor(@Inject() private readonly routeMatcher: RouteMatcher) {
-        this.events.subscribe('ActivatedRoute', (route: ActiveRoute) => {
-            console.log('activated route');
+    constructor(@Inject() private readonly pubSub: PubSub) {
+        this.pubSub.activatedRoute.subscribe((route: ActiveRoute) => {
             const {params, queryParams} = route;
             if (!this.route) {
-                this.events.emit('ParamChange', params);
-                this.events.emit('QueryParamChange', queryParams);
+                this.pubSub.activatedRouteParamChange.emit(params);
+                this.pubSub.activatedRouteQueryParamChange.emit(queryParams);
             } else {
                 if (this.hasParamChange(params)) {
-                    this.events.emit('ParamChange', params);
+                    this.pubSub.activatedRouteParamChange.emit(params);
                 }
                 if (this.hasQueryParamChange(queryParams)) {
-                    this.events.emit('QueryParamChange', queryParams);
+                    this.pubSub.activatedRouteQueryParamChange.emit(queryParams);
                 }
             }
             this.route = route;
@@ -31,7 +28,9 @@ export class ActivatedRoute {
     }
 
     private hasQueryParamChange(queryParams: QueryParams): boolean {
-        return Object.keys(queryParams).some((key: string) => queryParams[key] !== this.route.queryParams[key]);
+        return Object.keys(queryParams).some(
+            (key: string) => queryParams[key] !== this.route.queryParams[key]
+        );
     }
 
     private hasParamChange(params: Params): boolean {
@@ -39,11 +38,11 @@ export class ActivatedRoute {
     }
 
     onParamChange(callback: (params: Params) => void): Subscription {
-        return this.events.subscribe('ParamChange', callback);
+        return this.pubSub.activatedRouteParamChange.subscribe(callback);
     }
 
     onQueryParamChange(callback: (queryParams: QueryParams) => void): Subscription {
-        return this.events.subscribe('QueryParamChange', callback);
+        return this.pubSub.activatedRouteQueryParamChange.subscribe(callback);
     }
 
     getSnapshot(): ActiveRoute {
